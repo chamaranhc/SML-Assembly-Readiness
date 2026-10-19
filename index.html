@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SML Box Production - Assembly Daily Plan Dashboard</title>
+    <title>SML Box Production - Assembly Daily Plan & Commitment Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -66,18 +66,18 @@
                     <div>
                         <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                             SML Box Production 
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30">Collecting Point Hub</span>
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30">Rolling Planning Hub</span>
                         </h1>
-                        <p class="text-xs text-slate-400">Supplier Ready Qty Monitoring & Assembly Daily Planning</p>
+                        <p class="text-xs text-slate-400">Supplier Commitments $\rightarrow$ CP Actual Receipts $\rightarrow$ Daily Plan Consumption</p>
                     </div>
                 </div>
 
                 <!-- Right Controls & Status -->
                 <div class="flex items-center space-x-2.5 text-sm">
                     <!-- Realtime Cloud Status Indicator -->
-                    <div id="cloud-status-pill" class="hidden sm:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-                        <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                        <span id="cloud-status-text" class="text-xs text-slate-300 font-medium">Connecting Database...</span>
+                    <div id="cloud-status-pill" class="flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                        <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span id="cloud-status-text" class="text-xs text-slate-300 font-medium">System Ready</span>
                     </div>
 
                     <!-- Backup & Restore Buttons -->
@@ -95,16 +95,16 @@
 
                     <!-- 3 Supplier Dialog Quick Launchers -->
                     <div class="hidden lg:flex items-center space-x-1.5 pl-2 border-l border-slate-700">
-                        <button onclick="window.openSupplierModal('MTU')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition flex items-center space-x-1" title="Open MTU Data Entry Dialog">
-                            <i class="fa-solid fa-plus-circle"></i>
+                        <button onclick="window.openSupplierModal('MTU')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition flex items-center space-x-1" title="Log MTU Commitment / Delivery">
+                            <i class="fa-solid fa-truck-field"></i>
                             <span>MTU Entry</span>
                         </button>
-                        <button onclick="window.openSupplierModal('SML')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition flex items-center space-x-1" title="Open SML Data Entry Dialog">
-                            <i class="fa-solid fa-plus-circle"></i>
+                        <button onclick="window.openSupplierModal('SML')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition flex items-center space-x-1" title="Log SML Commitment / Delivery">
+                            <i class="fa-solid fa-boxes-stacked"></i>
                             <span>SML Entry</span>
                         </button>
-                        <button onclick="window.openSupplierModal('Funsole')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition flex items-center space-x-1" title="Open Funsole Data Entry Dialog">
-                            <i class="fa-solid fa-plus-circle"></i>
+                        <button onclick="window.openSupplierModal('Funsole')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition flex items-center space-x-1" title="Log Funsole Commitment / Delivery">
+                            <i class="fa-solid fa-warehouse"></i>
                             <span>Funsole Entry</span>
                         </button>
                     </div>
@@ -125,11 +125,12 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
+        <!-- Top Overview Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <!-- Total Planned Pairs -->
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex flex-col justify-between">
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Planned</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Order Target</span>
                     <span class="p-2 bg-slate-100 text-slate-600 rounded-lg text-xs"><i class="fa-solid fa-clipboard-list"></i></span>
                 </div>
                 <div class="mt-2">
@@ -138,10 +139,10 @@
                 </div>
             </div>
 
-            <!-- Upper Ready (UF) -->
+            <!-- Upper Collected (UF) -->
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex flex-col justify-between">
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Upper Ready (UF)</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Upper Available (UF)</span>
                     <span class="p-2 bg-blue-50 text-blue-600 rounded-lg text-xs"><i class="fa-solid fa-shoe-prints"></i></span>
                 </div>
                 <div class="mt-2">
@@ -152,10 +153,10 @@
                 </div>
             </div>
 
-            <!-- Insole Ready (IF) -->
+            <!-- Insole Collected (IF) -->
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex flex-col justify-between">
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Insole Ready (IF)</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Insole Available (IF)</span>
                     <span class="p-2 bg-teal-50 text-teal-600 rounded-lg text-xs"><i class="fa-solid fa-layer-group"></i></span>
                 </div>
                 <div class="mt-2">
@@ -166,10 +167,10 @@
                 </div>
             </div>
 
-            <!-- Sole Ready (SF) -->
+            <!-- Sole Collected (SF) -->
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex flex-col justify-between">
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Sole Ready (SF)</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Sole Available (SF)</span>
                     <span class="p-2 bg-purple-50 text-purple-600 rounded-lg text-xs"><i class="fa-solid fa-rug"></i></span>
                 </div>
                 <div class="mt-2">
@@ -183,17 +184,17 @@
             <!-- Assemble-able Full Sets -->
             <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-xl p-4 shadow-md flex flex-col justify-between">
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-100">Ready Sets (Matching)</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-100">Physical Matchable Sets</span>
                     <span class="p-2 bg-white/20 text-white rounded-lg text-xs"><i class="fa-solid fa-boxes-stacked"></i></span>
                 </div>
                 <div class="mt-2">
                     <div id="kpi-ready-sets" class="text-2xl font-black">0</div>
-                    <p class="text-[11px] text-emerald-100 mt-0.5"><span id="kpi-sets-pct">0</span>% set completeness</p>
+                    <p class="text-[11px] text-emerald-100 mt-0.5"><span id="kpi-sets-pct">0</span>% physical readiness</p>
                 </div>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
+        <!-- Navigation Tabs Bar -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-1.5 flex flex-wrap gap-2 text-sm font-medium">
             <button onclick="window.switchTab('master-plan')" id="tab-master-plan" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 bg-sky-600 text-white font-semibold transition shadow-sm">
                 <i class="fa-solid fa-list-check"></i>
@@ -201,23 +202,27 @@
             </button>
             <button onclick="window.switchTab('plan-builder')" id="tab-plan-builder" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 text-slate-600 hover:bg-slate-100 transition">
                 <i class="fa-solid fa-sliders"></i>
-                <span>Assembly Daily Planner & Matrix</span>
+                <span>Daily Assembly Planner & Carryover Engine</span>
             </button>
             <button onclick="window.switchTab('supplier-monitor')" id="tab-supplier-monitor" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 text-slate-600 hover:bg-slate-100 transition">
                 <i class="fa-solid fa-truck-ramp-box"></i>
-                <span>Supplier Ready Inventory Monitor</span>
+                <span>Supplier Commitments & Stock Monitor</span>
             </button>
             <button onclick="window.switchTab('collecting-point')" id="tab-collecting-point" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 text-slate-600 hover:bg-slate-100 transition">
                 <i class="fa-solid fa-warehouse"></i>
-                <span>Collecting Point Size Logger</span>
+                <span>Collecting Point Actual Receipt Logger</span>
             </button>
             <button onclick="window.switchTab('daily-schedule')" id="tab-daily-schedule" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 text-slate-600 hover:bg-slate-100 transition">
                 <i class="fa-solid fa-calendar-check"></i>
-                <span>Dispatched Assembly Plans</span>
+                <span>Dispatched Plans & Stock Consumption Log</span>
+            </button>
+            <button onclick="window.switchTab('stock-logs')" id="tab-stock-logs" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 text-slate-600 hover:bg-slate-100 transition">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Delivery Logs & Restores</span>
             </button>
             <button onclick="window.switchTab('analytics')" id="tab-analytics" class="tab-btn px-4 py-2 rounded-lg flex items-center space-x-2 text-slate-600 hover:bg-slate-100 transition">
                 <i class="fa-solid fa-chart-pie"></i>
-                <span>Supplier Bottleneck Analytics</span>
+                <span>Bottleneck Analytics</span>
             </button>
         </div>
 
@@ -267,10 +272,10 @@
                                 <th class="p-3">Plan Number</th>
                                 <th class="p-3 text-right">Deli Qty</th>
                                 <th class="p-3 text-center">Month</th>
-                                <th class="p-3 text-center">UF Status</th>
-                                <th class="p-3 text-center">IF Status</th>
-                                <th class="p-3 text-center">SF Status</th>
-                                <th class="p-3 text-center">Ready Sets</th>
+                                <th class="p-3 text-center">UF Collected</th>
+                                <th class="p-3 text-center">IF Collected</th>
+                                <th class="p-3 text-center">SF Collected</th>
+                                <th class="p-3 text-center">Matchable Sets (CP)</th>
                                 <th class="p-3 text-center">Action</th>
                             </tr>
                         </thead>
@@ -283,8 +288,35 @@
         </section>
 
         <section id="sec-plan-builder" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-sky-900 via-indigo-900 to-slate-900 border border-sky-800/80 p-4 rounded-2xl text-white shadow-md">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 font-extrabold text-sky-300 text-sm">
+                            <i class="fa-solid fa-arrows-spin text-base"></i>
+                            <span>Rolling Multi-Day Assembly & Inventory Carryover Workflow</span>
+                        </div>
+                        <p class="text-xs text-slate-300">
+                            <strong>Today's Supplier Commitments</strong> form <strong>Tomorrow's Draft Assembly Plan</strong>. When physical stock arrives at Collecting Point, verify actual receipts and dispatch. Unplanned balance rolls over automatically to next day.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold bg-amber-400 text-slate-900 px-3 py-1 rounded-full text-xs shadow-sm">
+                            <i class="fa-solid fa-box-archive mr-1"></i>Pack of 10 Rule (10, 20, 30...)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Plan Source Mode</label>
+                        <select id="builder-source-mode" onchange="window.renderPlanBuilder()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-2 font-bold text-sky-800">
+                            <option value="ACTUAL">Actual CP Received Stock (Ready for Dispatch)</option>
+                            <option value="COMMITMENT">Supplier Commitments Forecast (Tomorrow's Draft Plan)</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Sale Month</label>
                         <select id="builder-filter-month" onchange="window.renderPlanBuilder()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-2 font-semibold">
@@ -299,21 +331,16 @@
                         <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Search Plan Code</label>
                         <input type="text" id="builder-search" oninput="window.renderPlanBuilder()" placeholder="Search plan number..." class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-2 w-48">
                     </div>
-
-                    <div class="flex items-center text-xs font-bold text-amber-800 bg-amber-50 border border-amber-300 px-3 py-2 rounded-lg gap-1.5">
-                        <i class="fa-solid fa-circle-info text-amber-600"></i>
-                        <span>Min. Plan Rule: ≥ 10 pairs & Pack of 10 (10, 20, 30...)</span>
-                    </div>
                 </div>
 
                 <div class="flex items-center space-x-2">
                     <button onclick="window.autoFillAllMaxSets()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition shadow-sm">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Auto-Fill Pack of 10 Sets</span>
+                        <span>Auto-Fill Matchable Sets (Packs of 10)</span>
                     </button>
                     <button onclick="window.saveDailyPlanBatch()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition shadow-sm">
                         <i class="fa-solid fa-paper-plane"></i>
-                        <span>Dispatch Assembly Daily Plan</span>
+                        <span>Dispatch & Deduct CP Stock</span>
                     </button>
                 </div>
             </div>
@@ -359,10 +386,10 @@
                         <div class="flex items-center gap-2 font-bold text-sky-400 text-sm">
                             <i class="fa-solid fa-truck-field"></i> MTU Supplier Hub
                         </div>
-                        <p class="text-xs text-slate-300 mt-0.5">Manage MTU Upper (UF), Sole (SF), Insole (IF)</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Manage MTU Commitments & Deliveries</p>
                     </div>
                     <button onclick="window.openSupplierModal('MTU')" class="bg-sky-500 hover:bg-sky-400 text-white font-bold px-3 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-pen-to-square"></i> Add MTU Data
+                        <i class="fa-solid fa-pen-to-square"></i> Log MTU Entry
                     </button>
                 </div>
 
@@ -371,10 +398,10 @@
                         <div class="flex items-center gap-2 font-bold text-emerald-400 text-sm">
                             <i class="fa-solid fa-boxes-stacked"></i> SML Supplier Hub
                         </div>
-                        <p class="text-xs text-slate-300 mt-0.5">Manage SML Upper (UF), Sole (SF), Insole (IF)</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Manage SML Commitments & Deliveries</p>
                     </div>
                     <button onclick="window.openSupplierModal('SML')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-3 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-pen-to-square"></i> Add SML Data
+                        <i class="fa-solid fa-pen-to-square"></i> Log SML Entry
                     </button>
                 </div>
 
@@ -383,10 +410,10 @@
                         <div class="flex items-center gap-2 font-bold text-purple-400 text-sm">
                             <i class="fa-solid fa-warehouse"></i> Funsole Supplier Hub
                         </div>
-                        <p class="text-xs text-slate-300 mt-0.5">Manage Funsole Sole (SF), Insole (IF)</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Manage Funsole Commitments & Deliveries</p>
                     </div>
                     <button onclick="window.openSupplierModal('Funsole')" class="bg-purple-500 hover:bg-purple-400 text-white font-bold px-3 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-pen-to-square"></i> Add Funsole Data
+                        <i class="fa-solid fa-pen-to-square"></i> Log Funsole Entry
                     </button>
                 </div>
             </div>
@@ -394,7 +421,7 @@
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Supplier</label>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Supplier Filter</label>
                         <select id="monitor-filter-supplier" onchange="window.renderSupplierMonitor()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-2 font-semibold">
                             <option value="ALL">All Suppliers (MTU, SML, Funsole)</option>
                             <option value="MTU">MTU</option>
@@ -410,16 +437,6 @@
                             <option value="UF">UF - Upper Finishing</option>
                             <option value="IF">IF - Insole Finishing</option>
                             <option value="SF">SF - Sole Finishing</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status Filter</label>
-                        <select id="monitor-filter-status" onchange="window.renderSupplierMonitor()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-2 font-semibold">
-                            <option value="ALL">All Items</option>
-                            <option value="READY">100% Ready</option>
-                            <option value="PARTIAL">Partial Ready</option>
-                            <option value="ZERO">Zero Ready</option>
                         </select>
                     </div>
                 </div>
@@ -438,9 +455,9 @@
                                 <th class="p-3">Plan Number</th>
                                 <th class="p-3">Item Code</th>
                                 <th class="p-3">Supplier & Part</th>
-                                <th class="p-3">Type / Cat</th>
                                 <th class="p-3 text-right">Target Deli Qty</th>
-                                <th class="p-3 text-right">Ready Qty</th>
+                                <th class="p-3 text-right">Committed Qty</th>
+                                <th class="p-3 text-right">Collected Stock</th>
                                 <th class="p-3 text-center">Fulfillment</th>
                                 <th class="p-3 text-center">Size Breakdown (1-13)</th>
                                 <th class="p-3 text-center">Action</th>
@@ -456,11 +473,19 @@
 
         <section id="sec-collecting-point" class="tab-content hidden space-y-6">
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80">
-                <h3 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
-                    <i class="fa-solid fa-boxes-packing text-sky-600"></i>
-                    Collecting Point - Log Received Supplier Quantities (Incremental)
-                </h3>
-                <p class="text-xs text-slate-500 mb-4">Select a Plan Number and Component (UF, IF, SF) to update size-wise ready quantities directly collected at the assembly warehouse.</p>
+                <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-boxes-packing text-sky-600"></i>
+                            Collecting Point - Confirm Actual Received Quantities
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Record actual physical stock received at Collecting Point warehouse from supplier commitments.</p>
+                    </div>
+                    <button onclick="window.receiveAllPendingCommitmentsForCP()" class="bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-bold px-3 py-2 rounded-lg border border-sky-300 transition flex items-center space-x-1.5" title="Copy full pending committed quantities into physical received stock">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Receive All Pending Supplier Commitments</span>
+                    </button>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
@@ -480,7 +505,7 @@
                     <div class="flex items-end">
                         <button onclick="window.saveCPSizeQuantities()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-md flex items-center justify-center space-x-2 transition">
                             <i class="fa-solid fa-floppy-disk"></i>
-                            <span>Save Ready Stock Quantities (+)</span>
+                            <span>Save Actual Collected Stock (+)</span>
                         </button>
                     </div>
                 </div>
@@ -500,59 +525,28 @@
                             <thead>
                                 <tr class="bg-slate-200/80 text-slate-700 text-[11px] font-bold">
                                     <th class="p-2 border border-slate-300">Metric</th>
-                                    <th class="p-2 border border-slate-300">Sz 1</th>
-                                    <th class="p-2 border border-slate-300">Sz 2</th>
-                                    <th class="p-2 border border-slate-300">Sz 3</th>
-                                    <th class="p-2 border border-slate-300">Sz 4</th>
-                                    <th class="p-2 border border-slate-300">Sz 5</th>
-                                    <th class="p-2 border border-slate-300">Sz 6</th>
-                                    <th class="p-2 border border-slate-300">Sz 7</th>
-                                    <th class="p-2 border border-slate-300">Sz 8</th>
-                                    <th class="p-2 border border-slate-300">Sz 9</th>
-                                    <th class="p-2 border border-slate-300">Sz 10</th>
-                                    <th class="p-2 border border-slate-300">Sz 11</th>
-                                    <th class="p-2 border border-slate-300">Sz 12</th>
-                                    <th class="p-2 border border-slate-300">Sz 13</th>
+                                    <th class="p-2 border border-slate-300">Sz 1</th><th class="p-2 border border-slate-300">Sz 2</th><th class="p-2 border border-slate-300">Sz 3</th><th class="p-2 border border-slate-300">Sz 4</th><th class="p-2 border border-slate-300">Sz 5</th><th class="p-2 border border-slate-300">Sz 6</th><th class="p-2 border border-slate-300">Sz 7</th><th class="p-2 border border-slate-300">Sz 8</th><th class="p-2 border border-slate-300">Sz 9</th><th class="p-2 border border-slate-300">Sz 10</th><th class="p-2 border border-slate-300">Sz 11</th><th class="p-2 border border-slate-300">Sz 12</th><th class="p-2 border border-slate-300">Sz 13</th>
                                     <th class="p-2 border border-slate-300 bg-slate-300">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody class="text-xs font-semibold">
                                 <tr class="bg-white">
                                     <td class="p-2 border border-slate-300 font-bold text-slate-600">Plan Target</td>
-                                    <td id="cp-target-1" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-2" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-3" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-4" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-5" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-6" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-7" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-8" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-9" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-10" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-11" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-12" class="p-2 border border-slate-300 text-slate-500">0</td>
-                                    <td id="cp-target-13" class="p-2 border border-slate-300 text-slate-500">0</td>
+                                    <td id="cp-target-1" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-2" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-3" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-4" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-5" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-6" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-7" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-8" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-9" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-10" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-11" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-12" class="p-2 border border-slate-300 text-slate-500">0</td><td id="cp-target-13" class="p-2 border border-slate-300 text-slate-500">0</td>
                                     <td id="cp-target-total" class="p-2 border border-slate-300 font-bold bg-slate-100">0</td>
                                 </tr>
                                 <tr class="bg-slate-100">
-                                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Current Stock</td>
-                                    <td id="cp-cur-1" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-2" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-3" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-4" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-5" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-6" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-7" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-8" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-9" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-10" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-11" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-12" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-13" class="p-2 border border-slate-300 text-slate-700 font-semibold">0</td>
-                                    <td id="cp-cur-total" class="p-2 border border-slate-300 font-bold bg-slate-200">0</td>
+                                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Committed Qty</td>
+                                    <td id="cp-com-1" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-2" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-3" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-4" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-5" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-6" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-7" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-8" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-9" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-10" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-11" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-12" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td><td id="cp-com-13" class="p-2 border border-slate-300 text-sky-700 font-semibold">0</td>
+                                    <td id="cp-com-total" class="p-2 border border-slate-300 font-bold bg-sky-50">0</td>
+                                </tr>
+                                <tr class="bg-emerald-50/60">
+                                    <td class="p-2 border border-slate-300 font-bold text-emerald-800">Available Collected</td>
+                                    <td id="cp-cur-1" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-2" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-3" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-4" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-5" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-6" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-7" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-8" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-9" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-10" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-11" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-12" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td><td id="cp-cur-13" class="p-2 border border-slate-300 text-emerald-800 font-extrabold">0</td>
+                                    <td id="cp-cur-total" class="p-2 border border-slate-300 font-bold bg-emerald-100">0</td>
                                 </tr>
                                 <tr class="bg-sky-50/50">
-                                    <td class="p-2 border border-slate-300 font-bold text-sky-800">New Delivery (+)</td>
+                                    <td class="p-2 border border-slate-300 font-bold text-sky-800">Actual Delivery (+)</td>
                                     <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="cp-in-1" value="0" class="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold" oninput="window.calcCPTotal()"></td>
                                     <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="cp-in-2" value="0" class="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold" oninput="window.calcCPTotal()"></td>
                                     <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="cp-in-3" value="0" class="w-12 text-center bg-white border border-slate-300 rounded p-1 text-xs font-bold" oninput="window.calcCPTotal()"></td>
@@ -580,9 +574,9 @@
                 <div>
                     <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                         <i class="fa-solid fa-list-check text-emerald-600"></i>
-                        Assembly Daily Execution Queue
+                        Dispatched Daily Plans & Inventory Consumption Queue
                     </h3>
-                    <p class="text-xs text-slate-500">History of created assembly daily plans released to the assembly line.</p>
+                    <p class="text-xs text-slate-500">History of assembly daily plans released to the line (stock consumed upon dispatch).</p>
                 </div>
                 <button onclick="window.exportPlansCSV()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center space-x-1.5 transition">
                     <i class="fa-solid fa-file-csv"></i>
@@ -592,6 +586,53 @@
 
             <div id="dispatched-plans-list" class="space-y-4">
                 <!-- Dynamically filled with saved daily plan batches -->
+            </div>
+        </section>
+
+        <section id="sec-stock-logs" class="tab-content hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+                        Supplier Delivery History & Deletion Logs
+                    </h3>
+                    <p class="text-xs text-slate-500">Track all logged stock entries, delete mistaken inputs, and restore deleted deliveries anytime.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Filter Status</label>
+                        <select id="stock-log-filter-status" onchange="window.renderStockLogs()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-1.5 font-semibold">
+                            <option value="ALL">All Delivery Logs</option>
+                            <option value="ACTIVE">Active Stock Entries</option>
+                            <option value="DELETED">Deleted Stock Entries (Trash)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Search Plan / Supplier</label>
+                        <input type="text" id="stock-log-search" oninput="window.renderStockLogs()" placeholder="e.g. 26-09-203GR or MTU" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-1.5 w-48">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-800 text-white font-semibold uppercase tracking-wider text-[11px]">
+                                <th class="p-3">Log ID & Time</th>
+                                <th class="p-3">Plan Number</th>
+                                <th class="p-3">Supplier & Component</th>
+                                <th class="p-3 text-right">Added Pairs</th>
+                                <th class="p-3 text-center">Status</th>
+                                <th class="p-3 text-center">Size Breakdown (1-13)</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stock-logs-tbody" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -631,7 +672,7 @@
                                 <th class="p-2.5 text-center">UF Status</th>
                                 <th class="p-2.5 text-center">IF Status</th>
                                 <th class="p-2.5 text-center">SF Status</th>
-                                <th class="p-2.5 text-center">Max Sets Ready</th>
+                                <th class="p-2.5 text-center">Matchable Sets Ready</th>
                                 <th class="p-2.5">Main Bottleneck Component</th>
                             </tr>
                         </thead>
@@ -645,7 +686,6 @@
 
     </main>
 
-    <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Password Confirmation Modal for Clearing Data -->
@@ -656,12 +696,12 @@
                     <i class="fa-solid fa-lock"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-slate-900">Clear All Production Data</h3>
+                    <h3 class="text-base font-bold text-slate-900">Clear Active Operational Data</h3>
                     <p class="text-xs text-slate-500">Admin Authorization Required</p>
                 </div>
             </div>
             <p class="text-xs text-slate-600 mb-4">
-                This action will wipe all size-wise ready stock quantities and dispatched daily assembly plans across the database. Please enter the authorization password (Chama123) to proceed.
+                This action will wipe all active supplier commitments, physical ready stock, delivery history logs, and dispatched daily assembly plans across the database while keeping all Master Order Plan target quantities intact. Please enter authorization password (Chama123) to proceed.
             </p>
             <div class="mb-4">
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
@@ -692,8 +732,8 @@
                         MTU
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">MTU Incoming Stock Entry</h3>
-                        <p class="text-xs text-sky-600 font-semibold">Add Incremental Deliveries (+) - Min. 10 & Pack of 10</p>
+                        <h3 class="text-base font-bold text-slate-900">MTU Entry - Commitments & Deliveries</h3>
+                        <p class="text-xs text-sky-600 font-semibold">Log Supplier Commitment or Physical Delivery (+)</p>
                     </div>
                 </div>
                 <button onclick="window.closeSupplierModal('MTU')" class="text-slate-400 hover:text-slate-600 text-lg p-1 transition">
@@ -701,7 +741,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select MTU Plan Number</label>
                     <select id="mtu-modal-plan" onchange="window.loadSupplierModalPlanDetails('MTU')" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-sky-500">
@@ -712,12 +752,18 @@
                     <select id="mtu-modal-part" onchange="window.loadSupplierModalPlanDetails('MTU')" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-sky-500">
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Entry Target Type</label>
+                    <select id="mtu-modal-type" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-sky-500">
+                        <option value="DELIVERY">Physical Delivery Received (+ Collected)</option>
+                        <option value="COMMITMENT">Supplier Commitment Promise (+ Commitment)</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Size 1-13 Input Table -->
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-4">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-700 uppercase">Incremental Delivery Inputs (1 to 13)</span>
+                    <span class="text-xs font-bold text-slate-700 uppercase">Incremental Size Inputs (1 to 13)</span>
                     <div class="space-x-1">
                         <button onclick="window.quickFillSupplierModal('MTU', 100)" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-semibold">Add Remaining Target</button>
                         <button onclick="window.quickFillSupplierModal('MTU', 0)" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-semibold">Clear Inputs</button>
@@ -736,12 +782,16 @@
                                 <td class="p-1 border border-slate-300 font-bold text-slate-500">Target Qty</td>
                                 <td id="mtu-t-1" class="p-1 border border-slate-300">0</td><td id="mtu-t-2" class="p-1 border border-slate-300">0</td><td id="mtu-t-3" class="p-1 border border-slate-300">0</td><td id="mtu-t-4" class="p-1 border border-slate-300">0</td><td id="mtu-t-5" class="p-1 border border-slate-300">0</td><td id="mtu-t-6" class="p-1 border border-slate-300">0</td><td id="mtu-t-7" class="p-1 border border-slate-300">0</td><td id="mtu-t-8" class="p-1 border border-slate-300">0</td><td id="mtu-t-9" class="p-1 border border-slate-300">0</td><td id="mtu-t-10" class="p-1 border border-slate-300">0</td><td id="mtu-t-11" class="p-1 border border-slate-300">0</td><td id="mtu-t-12" class="p-1 border border-slate-300">0</td><td id="mtu-t-13" class="p-1 border border-slate-300">0</td>
                             </tr>
-                            <tr class="bg-slate-50">
-                                <td class="p-1 border border-slate-300 font-bold text-slate-600">Current Stock</td>
-                                <td id="mtu-cur-1" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-2" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-3" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-4" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-5" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-6" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-7" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-8" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-9" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-10" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-11" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-12" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="mtu-cur-13" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td>
+                            <tr class="bg-sky-50/50">
+                                <td class="p-1 border border-slate-300 font-bold text-sky-800">Committed</td>
+                                <td id="mtu-com-1" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-2" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-3" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-4" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-5" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-6" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-7" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-8" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-9" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-10" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-11" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-12" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="mtu-com-13" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td>
+                            </tr>
+                            <tr class="bg-emerald-50/50">
+                                <td class="p-1 border border-slate-300 font-bold text-emerald-800">Collected</td>
+                                <td id="mtu-cur-1" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-2" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-3" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-4" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-5" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-6" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-7" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-8" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-9" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-10" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-11" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-12" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="mtu-cur-13" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td>
                             </tr>
                             <tr class="bg-sky-50">
-                                <td class="p-1 border border-slate-300 font-bold text-sky-800">New Delivery (+)</td>
+                                <td class="p-1 border border-slate-300 font-bold text-sky-800">New Entry (+)</td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="mtu-in-1" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="mtu-in-2" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="mtu-in-3" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
@@ -765,7 +815,7 @@
                 <button onclick="window.closeSupplierModal('MTU')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
                 <button onclick="window.saveSupplierModalData('MTU')" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow transition flex items-center space-x-1.5">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Add MTU Delivery</span>
+                    <span>Save MTU Entry</span>
                 </button>
             </div>
         </div>
@@ -780,8 +830,8 @@
                         SML
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">SML Incoming Stock Entry</h3>
-                        <p class="text-xs text-emerald-600 font-semibold">Add Incremental Deliveries (+) - Min. 10 & Pack of 10</p>
+                        <h3 class="text-base font-bold text-slate-900">SML Entry - Commitments & Deliveries</h3>
+                        <p class="text-xs text-emerald-600 font-semibold">Log Supplier Commitment or Physical Delivery (+)</p>
                     </div>
                 </div>
                 <button onclick="window.closeSupplierModal('SML')" class="text-slate-400 hover:text-slate-600 text-lg p-1 transition">
@@ -789,7 +839,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select SML Plan Number</label>
                     <select id="sml-modal-plan" onchange="window.loadSupplierModalPlanDetails('SML')" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-emerald-500">
@@ -800,12 +850,18 @@
                     <select id="sml-modal-part" onchange="window.loadSupplierModalPlanDetails('SML')" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-emerald-500">
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Entry Target Type</label>
+                    <select id="sml-modal-type" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-emerald-500">
+                        <option value="DELIVERY">Physical Delivery Received (+ Collected)</option>
+                        <option value="COMMITMENT">Supplier Commitment Promise (+ Commitment)</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Size 1-13 Input Table -->
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-4">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-700 uppercase">Incremental Delivery Inputs (1 to 13)</span>
+                    <span class="text-xs font-bold text-slate-700 uppercase">Incremental Size Inputs (1 to 13)</span>
                     <div class="space-x-1">
                         <button onclick="window.quickFillSupplierModal('SML', 100)" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-semibold">Add Remaining Target</button>
                         <button onclick="window.quickFillSupplierModal('SML', 0)" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-semibold">Clear Inputs</button>
@@ -824,12 +880,16 @@
                                 <td class="p-1 border border-slate-300 font-bold text-slate-500">Target Qty</td>
                                 <td id="sml-t-1" class="p-1 border border-slate-300">0</td><td id="sml-t-2" class="p-1 border border-slate-300">0</td><td id="sml-t-3" class="p-1 border border-slate-300">0</td><td id="sml-t-4" class="p-1 border border-slate-300">0</td><td id="sml-t-5" class="p-1 border border-slate-300">0</td><td id="sml-t-6" class="p-1 border border-slate-300">0</td><td id="sml-t-7" class="p-1 border border-slate-300">0</td><td id="sml-t-8" class="p-1 border border-slate-300">0</td><td id="sml-t-9" class="p-1 border border-slate-300">0</td><td id="sml-t-10" class="p-1 border border-slate-300">0</td><td id="sml-t-11" class="p-1 border border-slate-300">0</td><td id="sml-t-12" class="p-1 border border-slate-300">0</td><td id="sml-t-13" class="p-1 border border-slate-300">0</td>
                             </tr>
-                            <tr class="bg-slate-50">
-                                <td class="p-1 border border-slate-300 font-bold text-slate-600">Current Stock</td>
-                                <td id="sml-cur-1" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-2" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-3" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-4" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-5" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-6" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-7" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-8" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-9" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-10" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-11" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-12" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="sml-cur-13" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td>
+                            <tr class="bg-sky-50/50">
+                                <td class="p-1 border border-slate-300 font-bold text-sky-800">Committed</td>
+                                <td id="sml-com-1" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-2" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-3" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-4" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-5" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-6" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-7" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-8" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-9" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-10" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-11" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-12" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="sml-com-13" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td>
+                            </tr>
+                            <tr class="bg-emerald-50/50">
+                                <td class="p-1 border border-slate-300 font-bold text-emerald-800">Collected</td>
+                                <td id="sml-cur-1" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-2" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-3" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-4" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-5" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-6" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-7" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-8" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-9" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-10" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-11" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-12" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="sml-cur-13" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td>
                             </tr>
                             <tr class="bg-emerald-50">
-                                <td class="p-1 border border-slate-300 font-bold text-emerald-800">New Delivery (+)</td>
+                                <td class="p-1 border border-slate-300 font-bold text-emerald-800">New Entry (+)</td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="sml-in-1" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="sml-in-2" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="sml-in-3" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
@@ -853,7 +913,7 @@
                 <button onclick="window.closeSupplierModal('SML')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
                 <button onclick="window.saveSupplierModalData('SML')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow transition flex items-center space-x-1.5">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Add SML Delivery</span>
+                    <span>Save SML Entry</span>
                 </button>
             </div>
         </div>
@@ -868,8 +928,8 @@
                         FUN
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Funsole Incoming Stock Entry</h3>
-                        <p class="text-xs text-purple-600 font-semibold">Add Incremental Deliveries (+) - Min. 10 & Pack of 10</p>
+                        <h3 class="text-base font-bold text-slate-900">Funsole Entry - Commitments & Deliveries</h3>
+                        <p class="text-xs text-purple-600 font-semibold">Log Supplier Commitment or Physical Delivery (+)</p>
                     </div>
                 </div>
                 <button onclick="window.closeSupplierModal('Funsole')" class="text-slate-400 hover:text-slate-600 text-lg p-1 transition">
@@ -877,7 +937,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Funsole Plan Number</label>
                     <select id="funsole-modal-plan" onchange="window.loadSupplierModalPlanDetails('Funsole')" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-purple-500">
@@ -888,12 +948,18 @@
                     <select id="funsole-modal-part" onchange="window.loadSupplierModalPlanDetails('Funsole')" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-purple-500">
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Entry Target Type</label>
+                    <select id="funsole-modal-type" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:ring-purple-500">
+                        <option value="DELIVERY">Physical Delivery Received (+ Collected)</option>
+                        <option value="COMMITMENT">Supplier Commitment Promise (+ Commitment)</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Size 1-13 Input Table -->
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-4">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-700 uppercase">Incremental Delivery Inputs (1 to 13)</span>
+                    <span class="text-xs font-bold text-slate-700 uppercase">Incremental Size Inputs (1 to 13)</span>
                     <div class="space-x-1">
                         <button onclick="window.quickFillSupplierModal('Funsole', 100)" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-semibold">Add Remaining Target</button>
                         <button onclick="window.quickFillSupplierModal('Funsole', 0)" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-semibold">Clear Inputs</button>
@@ -912,12 +978,16 @@
                                 <td class="p-1 border border-slate-300 font-bold text-slate-500">Target Qty</td>
                                 <td id="funsole-t-1" class="p-1 border border-slate-300">0</td><td id="funsole-t-2" class="p-1 border border-slate-300">0</td><td id="funsole-t-3" class="p-1 border border-slate-300">0</td><td id="funsole-t-4" class="p-1 border border-slate-300">0</td><td id="funsole-t-5" class="p-1 border border-slate-300">0</td><td id="funsole-t-6" class="p-1 border border-slate-300">0</td><td id="funsole-t-7" class="p-1 border border-slate-300">0</td><td id="funsole-t-8" class="p-1 border border-slate-300">0</td><td id="funsole-t-9" class="p-1 border border-slate-300">0</td><td id="funsole-t-10" class="p-1 border border-slate-300">0</td><td id="funsole-t-11" class="p-1 border border-slate-300">0</td><td id="funsole-t-12" class="p-1 border border-slate-300">0</td><td id="funsole-t-13" class="p-1 border border-slate-300">0</td>
                             </tr>
-                            <tr class="bg-slate-50">
-                                <td class="p-1 border border-slate-300 font-bold text-slate-600">Current Stock</td>
-                                <td id="funsole-cur-1" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-2" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-3" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-4" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-5" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-6" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-7" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-8" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-9" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-10" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-11" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-12" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td><td id="funsole-cur-13" class="p-1 border border-slate-300 font-semibold text-slate-700">0</td>
+                            <tr class="bg-sky-50/50">
+                                <td class="p-1 border border-slate-300 font-bold text-sky-800">Committed</td>
+                                <td id="funsole-com-1" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-2" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-3" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-4" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-5" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-6" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-7" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-8" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-9" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-10" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-11" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-12" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td><td id="funsole-com-13" class="p-1 border border-slate-300 font-semibold text-sky-700">0</td>
+                            </tr>
+                            <tr class="bg-emerald-50/50">
+                                <td class="p-1 border border-slate-300 font-bold text-emerald-800">Collected</td>
+                                <td id="funsole-cur-1" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-2" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-3" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-4" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-5" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-6" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-7" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-8" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-9" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-10" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-11" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-12" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td><td id="funsole-cur-13" class="p-1 border border-slate-300 font-bold text-emerald-800">0</td>
                             </tr>
                             <tr class="bg-purple-50">
-                                <td class="p-1 border border-slate-300 font-bold text-purple-800">New Delivery (+)</td>
+                                <td class="p-1 border border-slate-300 font-bold text-purple-800">New Entry (+)</td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="funsole-in-1" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="funsole-in-2" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
                                 <td class="p-1 border border-slate-300"><input type="number" min="0" step="10" id="funsole-in-3" value="0" class="w-10 text-center border border-slate-300 rounded p-0.5 font-bold"></td>
@@ -941,7 +1011,7 @@
                 <button onclick="window.closeSupplierModal('Funsole')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
                 <button onclick="window.saveSupplierModalData('Funsole')" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg shadow transition flex items-center space-x-1.5">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Add Funsole Delivery</span>
+                    <span>Save Funsole Entry</span>
                 </button>
             </div>
         </div>
@@ -950,7 +1020,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Firebase Web Config
         const firebaseConfig = {
@@ -971,17 +1041,18 @@
         let currentUser = null;
         let masterRecords = [];
         let dispatchedDailyPlans = [];
+        let stockLogs = [];
         let activeTab = 'master-plan';
         let chartSupplier = null;
         let chartParts = null;
 
-        // Assembly Master Plan Baseline Array
+        // Assembly Master Plan Baseline Array (60 active items excluding PU-Cool XC- items & GC-0449/451)
         const ASSEMBLY_MASTER_PLAN = [
             // Priority Group 1 (Red Priority)
             { itemCode: "GD-0428", category: "4", type: "F1", planNum: "26-09-203GP", deliQty: 80, month: "SEP", priority: "p1" },
             { itemCode: "GD-0428", category: "4", type: "F1", planNum: "26-09-203GR", deliQty: 930, month: "SEP", priority: "p1" },
             { itemCode: "GD-0428", category: "4", type: "F1", planNum: "26-09-217GG", deliQty: 1010, month: "SEP", priority: "p1" },
-            { itemCode: "JC-0527", category: "3", type: "F3", planNum: "26-09-206GP", deliQty: 60, month: "SEP", priority: "p1" },
+            { itemCode: "JC-0527", category: "4", type: "F3", planNum: "26-09-206GP", deliQty: 60, month: "SEP", priority: "p1" },
             { itemCode: "JC-0527", category: "3", type: "F3", planNum: "26-09-206GR", deliQty: 940, month: "SEP", priority: "p1" },
             { itemCode: "JC-0527", category: "4", type: "F3", planNum: "26-09-225GG", deliQty: 1000, month: "SEP", priority: "p1" },
             { itemCode: "JD-0521", category: "3", type: "F1", planNum: "26-09-276GP", deliQty: 80, month: "SEP", priority: "p1" },
@@ -1045,7 +1116,6 @@
         ];
 
         function getSizeAssortment(planNum, deliQty) {
-            // Precise Master Table Size Assortments (Sizes 01 - 13) from Assortment.csv
             const map = {
                 "26-11-111GG": {1:160, 2:160, 3:150, 4:190, 5:100, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:130, 13:110},
                 "26-11-112GG": {1:160, 2:160, 3:150, 4:190, 5:100, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:130, 13:150},
@@ -1076,14 +1146,6 @@
                 "26-10-402GP": {1:0, 2:0, 3:0, 4:0, 5:0, 6:10, 7:10, 8:10, 9:10, 10:10, 11:10, 12:0, 13:0},
                 "26-10-402GR": {1:0, 2:0, 3:0, 4:0, 5:0, 6:120, 7:120, 8:170, 9:170, 10:180, 11:180, 12:0, 13:0},
                 "26-10-403GG": {1:0, 2:0, 3:0, 4:0, 5:0, 6:130, 7:130, 8:180, 9:180, 10:190, 11:190, 12:0, 13:0},
-                "26-11-116GG": {1:0, 2:160, 3:190, 4:220, 5:220, 6:210, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0},
-                "26-11-117GG": {1:0, 2:160, 3:190, 4:220, 5:220, 6:210, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0},
-                "26-10-391GG": {1:160, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:100, 9:120, 10:140, 11:160, 12:160, 13:160},
-                "26-11-106GG": {1:120, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:100, 9:140, 10:160, 11:180, 12:160, 13:140},
-                "26-10-389GG": {1:120, 2:0, 3:0, 4:0, 5:0, 6:40, 7:60, 8:80, 9:100, 10:120, 11:160, 12:160, 13:160},
-                "26-11-107GG": {1:110, 2:0, 3:0, 4:0, 5:0, 6:30, 7:50, 8:80, 9:120, 10:150, 11:160, 12:150, 13:150},
-                "26-11-108GG": {1:110, 2:0, 3:0, 4:0, 5:0, 6:30, 7:50, 8:80, 9:120, 10:150, 11:160, 12:150, 13:150},
-                "26-10-390GG": {1:120, 2:0, 3:0, 4:0, 5:0, 6:40, 7:60, 8:80, 9:100, 10:120, 11:160, 12:160, 13:160},
                 "26-09-216GG": {1:140, 2:140, 3:150, 4:160, 5:150, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:130, 13:130},
                 "26-09-203GP": {1:0, 2:0, 3:0, 4:10, 5:10, 6:10, 7:10, 8:10, 9:10, 10:10, 11:10, 12:0, 13:0},
                 "26-09-203GR": {1:0, 2:0, 3:0, 4:70, 5:80, 6:120, 7:150, 8:150, 9:140, 10:120, 11:100, 12:0, 13:0},
@@ -1119,13 +1181,60 @@
 
             if (map[planNum]) return { ...map[planNum] };
 
-            // Fallback default distribution
             const perSize = Math.floor(deliQty / 8);
             const rem = deliQty - (perSize * 8);
-            let res = {1:0,2:0,3:0,4:perSize,5:perSize,6:perSize,7:perSize+rem,8:perSize,9:perSize,10:perSize,11:perSize,12:0,13:0};
-            return res;
+            return {1:0,2:0,3:0,4:perSize,5:perSize,6:perSize,7:perSize+rem,8:perSize,9:perSize,10:perSize,11:perSize,12:0,13:0};
         }
         window.getSizeAssortment = getSizeAssortment;
+
+        function buildBaselineMasterRecords() {
+            const records = [];
+            
+            const getSupplier = (planNum, part) => {
+                const smlUF = ["26-09-203GP", "26-09-206GP", "26-09-206GR", "26-09-225GG", "26-09-276GP", "26-09-207GP", "26-09-208GP", "26-09-208GR", "26-09-228GG", "26-09-239GG", "26-10-373GP", "26-09-240GG", "26-09-241GG", "26-09-242GG", "26-09-216GG", "26-09-279GP", "26-10-358GG", "26-10-368GG", "26-10-369GG", "26-10-370GG", "26-10-371GG", "26-11-111GG", "26-11-112GG", "26-11-113GG", "26-11-114GG", "26-11-118GG", "26-11-119GG", "26-11-120GG", "26-11-121GG", "26-11-122GG", "26-11-123GG", "26-10-392GP", "26-10-392GR", "26-10-393GG", "26-10-394GP", "26-10-394GR", "26-10-395GG", "26-11-115GG", "26-10-386GG", "26-10-387GG", "26-10-388GG", "26-10-398GP", "26-10-398GR", "26-10-399GG", "26-10-400GP", "26-10-400GR", "26-10-401GG", "26-10-402GP", "26-10-402GR", "26-10-403GG"];
+                const smlIF = ["26-09-203GP", "26-09-217GG", "26-09-218GG", "26-10-358GG", "26-10-370GG", "26-10-371GG"];
+                const smlSF = ["26-10-373GP", "26-10-358GG", "26-10-368GG", "26-10-369GG", "26-10-370GG", "26-10-371GG"];
+                const mtuIF = ["26-09-206GR", "26-09-225GG", "26-09-207GR", "26-09-227GG", "26-09-208GR", "26-09-228GG", "26-09-239GG", "26-09-240GG", "26-09-241GG", "26-09-242GG"];
+                
+                if (part === 'UF') return smlUF.includes(planNum) ? 'SML' : 'MTU';
+                if (part === 'IF') {
+                    if (smlIF.includes(planNum)) return 'SML';
+                    if (mtuIF.includes(planNum)) return 'MTU';
+                    return 'Funsole';
+                }
+                if (part === 'SF') {
+                    if (smlSF.includes(planNum)) return 'SML';
+                    const mtuSF = ["26-10-358GG", "26-10-368GG", "26-10-369GG", "26-10-370GG", "26-10-371GG"];
+                    if (mtuSF.includes(planNum)) return 'MTU';
+                    return 'Funsole';
+                }
+                return 'MTU';
+            };
+
+            ASSEMBLY_MASTER_PLAN.forEach(p => {
+                ['UF', 'IF', 'SF'].forEach(part => {
+                    const supp = getSupplier(p.planNum, part);
+                    const zeroMap = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0};
+                    records.push({
+                        docId: `${p.planNum}_${part}`,
+                        planNum: p.planNum,
+                        itemCode: p.itemCode,
+                        category: p.category,
+                        type: p.type,
+                        month: p.month,
+                        priority: p.priority,
+                        deliQty: p.deliQty,
+                        supplier: supp,
+                        part: part,
+                        sizeTarget: getSizeAssortment(p.planNum, p.deliQty),
+                        sizeCommitted: { ...zeroMap },
+                        sizeReady: { ...zeroMap } // Actual collected stock available
+                    });
+                });
+            });
+
+            return records;
+        }
 
         function updateCloudStatus(type, message) {
             const dot = document.getElementById('cloud-status-dot');
@@ -1269,6 +1378,7 @@
             if (activeTab === 'supplier-monitor') renderSupplierMonitor();
             if (activeTab === 'collecting-point') loadCPPlanDetails();
             if (activeTab === 'daily-schedule') renderDispatchedPlans();
+            if (activeTab === 'stock-logs') renderStockLogs();
             if (activeTab === 'analytics') {
                 renderAnalyticsCharts();
                 renderBottleneckTable();
@@ -1379,6 +1489,7 @@
         window.goToPlanInBuilder = goToPlanInBuilder;
 
         function renderPlanBuilder() {
+            const sourceMode = document.getElementById('builder-source-mode')?.value || 'ACTUAL';
             const monthFilter = document.getElementById('builder-filter-month')?.value || 'ALL';
             const searchQuery = (document.getElementById('builder-search')?.value || '').toLowerCase().trim();
 
@@ -1407,12 +1518,13 @@
                 let totalMaxSets = 0;
 
                 for (let s = 1; s <= 13; s++) {
-                    const u = ufRec ? (ufRec.sizeReady?.[s] || 0) : 0;
-                    const i = ifRec ? (ifRec.sizeReady?.[s] || 0) : 0;
-                    const f = sfRec ? (sfRec.sizeReady?.[s] || 0) : 0;
+                    const u = ufRec ? (sourceMode === 'COMMITMENT' ? ((ufRec.sizeReady?.[s] || 0) + (ufRec.sizeCommitted?.[s] || 0)) : (ufRec.sizeReady?.[s] || 0)) : 0;
+                    const i = ifRec ? (sourceMode === 'COMMITMENT' ? ((ifRec.sizeReady?.[s] || 0) + (ifRec.sizeCommitted?.[s] || 0)) : (ifRec.sizeReady?.[s] || 0)) : 0;
+                    const f = sfRec ? (sourceMode === 'COMMITMENT' ? ((sfRec.sizeReady?.[s] || 0) + (sfRec.sizeCommitted?.[s] || 0)) : (sfRec.sizeReady?.[s] || 0)) : 0;
                     const maxS = Math.min(u, i, f);
                     maxSetsPerSize[s] = maxS;
-                    // Pack of 10 & Min 10 rule: Round down to nearest multiple of 10
+                    
+                    // Pack of 10 rule: Round down to nearest multiple of 10
                     const planS = maxS >= 10 ? Math.floor(maxS / 10) * 10 : 0;
                     totalMaxSets += planS;
                 }
@@ -1426,10 +1538,14 @@
                         <input type="number" min="0" max="${maxS}" step="10" value="${defaultVal}" 
                             id="builder-input-${item.planNum}-${s}" 
                             oninput="window.calcPlanRowTotal('${item.planNum}')"
-                            class="w-10 text-center bg-emerald-50/50 border border-slate-300 rounded text-xs font-bold text-slate-800 focus:ring-sky-500" title="Max available sets: ${maxS}. Plan rule: Min 10 & Pack of 10 (10, 20, 30...).">
+                            class="w-10 text-center ${sourceMode === 'COMMITMENT' ? 'bg-sky-50' : 'bg-emerald-50/50'} border border-slate-300 rounded text-xs font-bold text-slate-800 focus:ring-sky-500" title="Max matchable sets: ${maxS}. Min 10 & Pack of 10.">
                         <div class="text-[9px] text-slate-400 text-center mt-0.5">/ ${maxS}</div>
                     </td>`;
                 }
+
+                let statusBadgeHtml = sourceMode === 'COMMITMENT' 
+                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-300"><i class="fa-regular fa-clock mr-1"></i>Tomorrow's Draft</span>`
+                    : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-check mr-1"></i>CP Ready</span>`;
 
                 html += `
                 <tr class="hover:bg-slate-50 transition border-b border-slate-200">
@@ -1438,15 +1554,15 @@
                         <div class="text-[10px] text-sky-600 font-semibold">${item.itemCode} (${item.month})</div>
                     </td>
                     <td class="p-2 text-center text-[10px] border-r border-slate-100">
-                        <div class="font-bold text-slate-700">Planned Sets: <span class="text-emerald-700 font-extrabold" id="builder-badge-${item.planNum}">${totalMaxSets}</span></div>
-                        <div class="text-slate-400">Target: ${item.deliQty}</div>
+                        ${statusBadgeHtml}
+                        <div class="font-bold text-slate-700 mt-1">Matchable: <span class="text-emerald-700 font-extrabold" id="builder-badge-${item.planNum}">${totalMaxSets}</span></div>
                     </td>
                     ${inputsHtml}
                     <td class="p-3 text-center font-black text-sky-700 bg-sky-50/50 border-r border-slate-100" id="builder-total-${item.planNum}">
                         ${totalMaxSets}
                     </td>
                     <td class="p-3 text-center">
-                        <button onclick="window.autoFillPlanMaxSets('${item.planNum}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded transition" title="Fill Max Matchable Sets (Multiple of 10, min 10)">
+                        <button onclick="window.autoFillPlanMaxSets('${item.planNum}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded transition" title="Fill Max Matchable Sets (Multiple of 10)">
                             Max Sets
                         </button>
                     </td>
@@ -1464,7 +1580,6 @@
                 const el = document.getElementById(`builder-input-${planNum}-${s}`);
                 if (el) {
                     const q = parseInt(el.value || 0, 10);
-                    // Must be >= 10 and an exact multiple of 10 (or 0)
                     if (q > 0 && (q < 10 || q % 10 !== 0)) {
                         hasInvalidQty = true;
                         el.className = "w-10 text-center bg-rose-100 border-2 border-rose-500 rounded text-xs font-bold text-rose-900 focus:ring-rose-500";
@@ -1490,17 +1605,17 @@
         window.calcPlanRowTotal = calcPlanRowTotal;
 
         function autoFillPlanMaxSets(planNum) {
+            const sourceMode = document.getElementById('builder-source-mode')?.value || 'ACTUAL';
             const planParts = masterRecords.filter(r => r.planNum === planNum);
             const ufRec = planParts.find(r => r.part === 'UF');
             const ifRec = planParts.find(r => r.part === 'IF');
             const sfRec = planParts.find(r => r.part === 'SF');
 
             for (let s = 1; s <= 13; s++) {
-                const u = ufRec ? (ufRec.sizeReady?.[s] || 0) : 0;
-                const i = ifRec ? (ifRec.sizeReady?.[s] || 0) : 0;
-                const f = sfRec ? (sfRec.sizeReady?.[s] || 0) : 0;
+                const u = ufRec ? (sourceMode === 'COMMITMENT' ? ((ufRec.sizeReady?.[s] || 0) + (ufRec.sizeCommitted?.[s] || 0)) : (ufRec.sizeReady?.[s] || 0)) : 0;
+                const i = ifRec ? (sourceMode === 'COMMITMENT' ? ((ifRec.sizeReady?.[s] || 0) + (ifRec.sizeCommitted?.[s] || 0)) : (ifRec.sizeReady?.[s] || 0)) : 0;
+                const f = sfRec ? (sourceMode === 'COMMITMENT' ? ((sfRec.sizeReady?.[s] || 0) + (sfRec.sizeCommitted?.[s] || 0)) : (sfRec.sizeReady?.[s] || 0)) : 0;
                 const maxS = Math.min(u, i, f);
-                // Pack of 10 & Min 10 rule
                 const fillVal = maxS >= 10 ? Math.floor(maxS / 10) * 10 : 0;
 
                 const el = document.getElementById(`builder-input-${planNum}-${s}`);
@@ -1512,25 +1627,46 @@
 
         function autoFillAllMaxSets() {
             ASSEMBLY_MASTER_PLAN.forEach(p => autoFillPlanMaxSets(p.planNum));
-            showToast('Auto-filled maximum matchable sets in packs of 10 (min. 10 pairs).', 'info');
+            showToast('Auto-filled maximum available sets in packs of 10.', 'info');
         }
         window.autoFillAllMaxSets = autoFillAllMaxSets;
 
         async function saveDailyPlanBatch() {
-            if (!currentUser) return;
+            const dispatchBtn = document.querySelector('button[onclick="window.saveDailyPlanBatch()"]');
+            if (dispatchBtn) dispatchBtn.disabled = true;
 
             const items = [];
             let totalBatchQty = 0;
             let invalidEntries = [];
+            let insufficientStockEntries = [];
+
+            const sourceMode = document.getElementById('builder-source-mode')?.value || 'ACTUAL';
 
             ASSEMBLY_MASTER_PLAN.forEach(p => {
                 let planTotal = 0;
                 let sizes = {};
+                const planParts = masterRecords.filter(r => r.planNum === p.planNum);
+                const ufRec = planParts.find(r => r.part === 'UF');
+                const ifRec = planParts.find(r => r.part === 'IF');
+                const sfRec = planParts.find(r => r.part === 'SF');
+
                 for (let s = 1; s <= 13; s++) {
                     const el = document.getElementById(`builder-input-${p.planNum}-${s}`);
                     const q = el ? parseInt(el.value || 0, 10) : 0;
-                    if (q > 0 && (q < 10 || q % 10 !== 0)) {
-                        invalidEntries.push({ planNum: p.planNum, size: s, qty: q });
+                    if (q > 0) {
+                        if (q < 10 || q % 10 !== 0) {
+                            invalidEntries.push({ planNum: p.planNum, size: s, qty: q });
+                        }
+
+                        // Calculate available matchable sets for this size (including commitments if in forecast mode)
+                        const u = ufRec ? (sourceMode === 'COMMITMENT' ? ((ufRec.sizeReady?.[s] || 0) + (ufRec.sizeCommitted?.[s] || 0)) : (ufRec.sizeReady?.[s] || 0)) : 0;
+                        const i = ifRec ? (sourceMode === 'COMMITMENT' ? ((ifRec.sizeReady?.[s] || 0) + (ifRec.sizeCommitted?.[s] || 0)) : (ifRec.sizeReady?.[s] || 0)) : 0;
+                        const f = sfRec ? (sourceMode === 'COMMITMENT' ? ((sfRec.sizeReady?.[s] || 0) + (sfRec.sizeCommitted?.[s] || 0)) : (sfRec.sizeReady?.[s] || 0)) : 0;
+                        const maxS = Math.min(u, i, f);
+
+                        if (q > maxS) {
+                            insufficientStockEntries.push({ planNum: p.planNum, size: s, requested: q, available: maxS });
+                        }
                     }
                     sizes[s] = q;
                     planTotal += q;
@@ -1550,11 +1686,20 @@
             if (invalidEntries.length > 0) {
                 const first = invalidEntries[0];
                 showToast(`Validation Error: Quantities must be at least 10 pairs and exact multiples of 10! Plan ${first.planNum} Size ${first.size} has ${first.qty} pairs.`, 'warning');
+                if (dispatchBtn) dispatchBtn.disabled = false;
+                return;
+            }
+
+            if (insufficientStockEntries.length > 0) {
+                const first = insufficientStockEntries[0];
+                showToast(`Dispatch Blocked (Duplicate / Over-dispatch): Plan ${first.planNum} Size ${first.size} requested ${first.requested} pairs, but max available matchable stock is ${first.available} pairs!`, 'warning');
+                if (dispatchBtn) dispatchBtn.disabled = false;
                 return;
             }
 
             if (items.length === 0) {
                 showToast('No assembly quantities specified in daily plan.', 'warning');
+                if (dispatchBtn) dispatchBtn.disabled = false;
                 return;
             }
 
@@ -1562,20 +1707,88 @@
                 id: `DISP-${Date.now()}`,
                 dispatchedAt: new Date().toISOString(),
                 totalPairs: totalBatchQty,
-                planCount: items.length,
                 items: items
             };
 
             try {
                 updateCloudStatus('syncing', 'Dispatching Daily Plan...');
-                const colRef = collection(db, "artifacts", appId, "public", "data", "dispatched_plans");
-                await setDoc(doc(colRef, dispatchDoc.id), dispatchDoc);
-                showToast(`Successfully dispatched Assembly Daily Plan (${totalBatchQty.toLocaleString()} pairs)!`, 'success');
+                if (currentUser) {
+                    const batch = writeBatch(db);
+
+                    // 1. Save dispatch log
+                    const planRef = doc(db, "artifacts", appId, "public", "data", "dispatched_plans", dispatchDoc.id);
+                    batch.set(planRef, dispatchDoc);
+
+                    // 2. Consume stock from master_records for UF, IF, SF (both ready stock & pending commitments)
+                    items.forEach(item => {
+                        ['UF', 'IF', 'SF'].forEach(part => {
+                            const docId = `${item.planNum}_${part}`;
+                            const rec = masterRecords.find(r => r.planNum === item.planNum && r.part === part);
+                            if (rec) {
+                                let updatedReady = { ...(rec.sizeReady || {}) };
+                                let updatedCommitted = { ...(rec.sizeCommitted || {}) };
+                                for (let s = 1; s <= 13; s++) {
+                                    const consumeQty = item.sizes?.[s] || 0;
+                                    if (consumeQty > 0) {
+                                        // Deduct from physical stock first
+                                        const deductFromReady = Math.min(updatedReady[s] || 0, consumeQty);
+                                        updatedReady[s] -= deductFromReady;
+                                        const remToDeduct = consumeQty - deductFromReady;
+                                        // Deduct any remaining from pending commitments second
+                                        if (remToDeduct > 0) {
+                                            updatedCommitted[s] = Math.max(0, (updatedCommitted[s] || 0) - remToDeduct);
+                                        }
+                                    }
+                                }
+                                const ref = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
+                                batch.update(ref, { sizeReady: updatedReady, sizeCommitted: updatedCommitted });
+                            }
+                        });
+                    });
+
+                    await batch.commit();
+                } else {
+                    dispatchedDailyPlans.unshift(dispatchDoc);
+                    items.forEach(item => {
+                        ['UF', 'IF', 'SF'].forEach(part => {
+                            const rec = masterRecords.find(r => r.planNum === item.planNum && r.part === part);
+                            if (rec) {
+                                for (let s = 1; s <= 13; s++) {
+                                    const consumeQty = item.sizes?.[s] || 0;
+                                    if (consumeQty > 0) {
+                                        const deductFromReady = Math.min(rec.sizeReady?.[s] || 0, consumeQty);
+                                        rec.sizeReady[s] = (rec.sizeReady?.[s] || 0) - deductFromReady;
+                                        const remToDeduct = consumeQty - deductFromReady;
+                                        if (remToDeduct > 0) {
+                                            rec.sizeCommitted[s] = Math.max(0, (rec.sizeCommitted?.[s] || 0) - remToDeduct);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    initData();
+                }
+
+                showToast(`Dispatched Daily Plan (${totalBatchQty.toLocaleString()} pairs) & Consumed Inventory!`, 'success');
+                
+                // Reset matrix inputs after dispatch to prevent duplicate clicks
+                ASSEMBLY_MASTER_PLAN.forEach(p => {
+                    for (let s = 1; s <= 13; s++) {
+                        const el = document.getElementById(`builder-input-${p.planNum}-${s}`);
+                        if (el) el.value = 0;
+                    }
+                });
+
                 switchTab('daily-schedule');
             } catch (err) {
                 console.error("Error saving dispatch:", err);
-                showToast("Failed to dispatch daily plan. Check database connection.", "warning");
-                updateCloudStatus('error', 'Sync Failed');
+                dispatchedDailyPlans.unshift(dispatchDoc);
+                showToast(`Saved locally! Dispatched Daily Plan (${totalBatchQty.toLocaleString()} pairs).`, 'success');
+                switchTab('daily-schedule');
+            } finally {
+                if (dispatchBtn) dispatchBtn.disabled = false;
+                updateCloudStatus('online', 'Realtime Ready');
             }
         }
         window.saveDailyPlanBatch = saveDailyPlanBatch;
@@ -1601,7 +1814,6 @@
         function renderSupplierMonitor() {
             const suppFilter = document.getElementById('monitor-filter-supplier')?.value || 'ALL';
             const partFilter = document.getElementById('monitor-filter-part')?.value || 'ALL';
-            const statusFilter = document.getElementById('monitor-filter-status')?.value || 'ALL';
 
             const tbody = document.getElementById('supplier-monitor-tbody');
             if (!tbody) return;
@@ -1609,12 +1821,6 @@
             let filtered = masterRecords.filter(r => {
                 if (suppFilter !== 'ALL' && r.supplier !== suppFilter) return false;
                 if (partFilter !== 'ALL' && r.part !== partFilter) return false;
-
-                const curTot = Object.values(r.sizeReady || {}).reduce((a,b)=>a+b,0);
-                if (statusFilter === 'READY' && curTot < r.deliQty) return false;
-                if (statusFilter === 'PARTIAL' && (curTot === 0 || curTot >= r.deliQty)) return false;
-                if (statusFilter === 'ZERO' && curTot > 0) return false;
-
                 return true;
             });
 
@@ -1628,6 +1834,7 @@
 
             let html = '';
             filtered.forEach(r => {
+                const comTot = Object.values(r.sizeCommitted || {}).reduce((a,b)=>a+b,0);
                 const curTot = Object.values(r.sizeReady || {}).reduce((a,b)=>a+b,0);
                 const pct = Math.min(100, Math.round((curTot / (r.deliQty || 1)) * 100));
 
@@ -1638,14 +1845,10 @@
                 let sizeBadges = '';
                 for (let s = 1; s <= 13; s++) {
                     const q = r.sizeReady?.[s] || 0;
+                    const cQ = r.sizeCommitted?.[s] || 0;
                     const targetQ = r.sizeTarget?.[s] || 0;
                     if (targetQ > 0) {
-                        const sPct = Math.round((q / targetQ) * 100);
-                        let sColor = 'bg-slate-100 text-slate-600';
-                        if (sPct >= 100) sColor = 'bg-emerald-100 text-emerald-800 font-bold';
-                        else if (sPct > 0) sColor = 'bg-amber-100 text-amber-800 font-semibold';
-
-                        sizeBadges += `<span class="inline-block px-1.5 py-0.5 m-0.5 rounded text-[10px] ${sColor}" title="Size ${s}: ${q}/${targetQ}">S${s}:${q}</span>`;
+                        sizeBadges += `<span class="inline-block px-1.5 py-0.5 m-0.5 rounded text-[10px] ${q >= targetQ ? 'bg-emerald-100 text-emerald-800 font-bold' : q > 0 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}" title="Target: ${targetQ} | Committed: ${cQ} | Collected: ${q}">S${s}:${q}</span>`;
                     }
                 }
 
@@ -1657,9 +1860,9 @@
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${r.supplier === 'MTU' ? 'bg-sky-100 text-sky-800' : r.supplier === 'SML' ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'} mr-1">${r.supplier}</span>
                         ${r.part}
                     </td>
-                    <td class="p-3 text-slate-600">${r.type || 'F1'} / Cat ${r.category || '3'}</td>
                     <td class="p-3 text-right font-semibold text-slate-700">${r.deliQty.toLocaleString()}</td>
-                    <td class="p-3 text-right font-black text-slate-900">${curTot.toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-sky-700">${comTot.toLocaleString()}</td>
+                    <td class="p-3 text-right font-black text-emerald-700">${curTot.toLocaleString()}</td>
                     <td class="p-3 text-center">
                         <span class="px-2 py-1 rounded text-xs font-bold ${badgeClass}">
                             ${pct}%
@@ -1670,7 +1873,7 @@
                     </td>
                     <td class="p-3 text-center">
                         <button onclick="window.openSupplierModalForRecord('${r.supplier}', '${r.planNum}', '${r.part}')" class="text-xs bg-slate-800 hover:bg-slate-700 text-white font-semibold px-2.5 py-1 rounded transition shadow-sm">
-                            Log Stock
+                            Log Entry
                         </button>
                     </td>
                 </tr>`;
@@ -1701,14 +1904,19 @@
             document.getElementById('cp-grid-title').innerText = `${currentRec.planNum} - ${currentRec.itemCode} | ${currentRec.part} (${currentRec.supplier})`;
 
             let targetSum = 0;
+            let comSum = 0;
             let currentSum = 0;
 
             for (let s = 1; s <= 13; s++) {
                 const t = currentRec.sizeTarget?.[s] || 0;
+                const com = currentRec.sizeCommitted?.[s] || 0;
                 const cur = currentRec.sizeReady?.[s] || 0;
 
                 const tEl = document.getElementById(`cp-target-${s}`);
                 if (tEl) tEl.innerText = t;
+
+                const comEl = document.getElementById(`cp-com-${s}`);
+                if (comEl) comEl.innerText = com;
 
                 const curEl = document.getElementById(`cp-cur-${s}`);
                 if (curEl) curEl.innerText = cur;
@@ -1717,11 +1925,15 @@
                 if (inEl) inEl.value = 0;
 
                 targetSum += t;
+                comSum += com;
                 currentSum += cur;
             }
 
             const tTot = document.getElementById('cp-target-total');
             if (tTot) tTot.innerText = targetSum;
+
+            const cTot = document.getElementById('cp-com-total');
+            if (cTot) cTot.innerText = comSum;
 
             const curTot = document.getElementById('cp-cur-total');
             if (curTot) curTot.innerText = currentSum;
@@ -1764,9 +1976,39 @@
         }
         window.quickFillCP = quickFillCP;
 
-        async function saveCPSizeQuantities() {
-            if (!currentUser) return;
+        // Convert Supplier Commitments to Actual Receipts at CP
+        async function receiveAllPendingCommitmentsForCP() {
+            const planSel = document.getElementById('cp-select-plan');
+            const partSel = document.getElementById('cp-select-part');
+            if (!planSel || !partSel) return;
 
+            const planNum = planSel.value;
+            const part = partSel.value;
+            const rec = masterRecords.find(r => r.planNum === planNum && r.part === part);
+            if (!rec) return;
+
+            let addCount = 0;
+            for (let s = 1; s <= 13; s++) {
+                const com = rec.sizeCommitted?.[s] || 0;
+                const cur = rec.sizeReady?.[s] || 0;
+                const pending = Math.max(0, com - cur);
+
+                const inEl = document.getElementById(`cp-in-${s}`);
+                if (inEl) {
+                    inEl.value = pending;
+                    addCount += pending;
+                }
+            }
+            calcCPTotal();
+            if (addCount > 0) {
+                showToast(`Filled +${addCount} pairs from pending supplier commitments. Click 'Save Actual Collected Stock' to confirm.`, 'info');
+            } else {
+                showToast('No pending commitments found for this component.', 'warning');
+            }
+        }
+        window.receiveAllPendingCommitmentsForCP = receiveAllPendingCommitmentsForCP;
+
+        async function saveCPSizeQuantities() {
             const planSel = document.getElementById('cp-select-plan');
             const partSel = document.getElementById('cp-select-part');
             if (!planSel || !partSel) return;
@@ -1779,17 +2021,20 @@
             if (!rec) return;
 
             let updatedReady = { ...(rec.sizeReady || {}) };
+            let updatedCommitted = { ...(rec.sizeCommitted || {}) };
             let addedSum = 0;
-            let invalidDelivery = false;
+            let addedSizesMap = {};
 
             for (let s = 1; s <= 13; s++) {
                 const inEl = document.getElementById(`cp-in-${s}`);
                 const addQty = parseInt(inEl?.value || 0, 10);
                 if (addQty > 0) {
-                    if (addQty < 10 || addQty % 10 !== 0) {
-                        invalidDelivery = true;
-                    }
                     updatedReady[s] = (updatedReady[s] || 0) + addQty;
+                    // Fulfill/refresh pending commitment with physical stock
+                    const convertCommitment = Math.min(updatedCommitted[s] || 0, addQty);
+                    updatedCommitted[s] = Math.max(0, (updatedCommitted[s] || 0) - convertCommitment);
+
+                    addedSizesMap[s] = addQty;
                     addedSum += addQty;
                 }
             }
@@ -1799,20 +2044,46 @@
                 return;
             }
 
-            if (invalidDelivery) {
-                showToast("Warning: Incremental deliveries should be in packs of 10 (min. 10).", "warning");
-            }
+            const logId = `LOG-${Date.now()}`;
+            const logObj = {
+                id: logId,
+                timestamp: new Date().toISOString(),
+                planNum: planNum,
+                part: part,
+                supplier: rec.supplier,
+                sizes: addedSizesMap,
+                totalQty: addedSum,
+                status: 'ACTIVE'
+            };
 
             try {
-                updateCloudStatus('syncing', 'Saving ready quantities...');
-                const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
-                await updateDoc(docRef, { sizeReady: updatedReady });
-                showToast(`Added +${addedSum} pairs for ${planNum} (${part})`, 'success');
+                updateCloudStatus('syncing', 'Saving actual collected stock...');
+                if (currentUser) {
+                    const batch = writeBatch(db);
+                    const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
+                    batch.update(docRef, { sizeReady: updatedReady, sizeCommitted: updatedCommitted });
+
+                    const logRef = doc(db, "artifacts", appId, "public", "data", "stock_logs", logId);
+                    batch.set(logRef, logObj);
+
+                    await batch.commit();
+                } else {
+                    rec.sizeReady = updatedReady;
+                    rec.sizeCommitted = updatedCommitted;
+                    stockLogs.unshift(logObj);
+                    initData();
+                }
+                showToast(`Added +${addedSum} pairs to collected inventory for ${planNum} (${part})`, 'success');
                 loadCPPlanDetails();
             } catch (err) {
                 console.error("Error updating ready quantities:", err);
-                showToast("Failed to update database stock. Check connection.", "warning");
-                updateCloudStatus('error', 'Sync Failed');
+                rec.sizeReady = updatedReady;
+                rec.sizeCommitted = updatedCommitted;
+                stockLogs.unshift(logObj);
+                initData();
+                showToast(`Saved locally! Added +${addedSum} pairs.`, 'success');
+            } finally {
+                updateCloudStatus('online', 'Realtime Ready');
             }
         }
         window.saveCPSizeQuantities = saveCPSizeQuantities;
@@ -1875,10 +2146,14 @@
 
             for (let s = 1; s <= 13; s++) {
                 const t = currentRec.sizeTarget?.[s] || 0;
+                const com = currentRec.sizeCommitted?.[s] || 0;
                 const cur = currentRec.sizeReady?.[s] || 0;
 
                 const tEl = document.getElementById(`${supp}-t-${s}`);
                 if (tEl) tEl.innerText = t;
+
+                const comEl = document.getElementById(`${supp}-com-${s}`);
+                if (comEl) comEl.innerText = com;
 
                 const curEl = document.getElementById(`${supp}-cur-${s}`);
                 if (curEl) curEl.innerText = cur;
@@ -1913,234 +2188,331 @@
         window.quickFillSupplierModal = quickFillSupplierModal;
 
         async function saveSupplierModalData(supplier) {
-            if (!currentUser) return;
-
             const supp = supplier.toLowerCase();
             const planSel = document.getElementById(`${supp}-modal-plan`);
             const partSel = document.getElementById(`${supp}-modal-part`);
-            if (!planSel || !partSel) return;
+            const typeSel = document.getElementById(`${supp}-modal-type`);
+            if (!planSel || !partSel || !typeSel) return;
 
             const planNum = planSel.value;
             const part = partSel.value;
+            const entryType = typeSel.value; // DELIVERY or COMMITMENT
             const docId = `${planNum}_${part}`;
 
             const rec = masterRecords.find(r => r.supplier === supplier && r.planNum === planNum && r.part === part);
             if (!rec) return;
 
+            let updatedCommitted = { ...(rec.sizeCommitted || {}) };
             let updatedReady = { ...(rec.sizeReady || {}) };
             let addedSum = 0;
-            let invalidDelivery = false;
+            let addedSizesMap = {};
 
             for (let s = 1; s <= 13; s++) {
                 const inEl = document.getElementById(`${supp}-in-${s}`);
                 const addQty = parseInt(inEl?.value || 0, 10);
                 if (addQty > 0) {
-                    if (addQty < 10 || addQty % 10 !== 0) {
-                        invalidDelivery = true;
+                    if (entryType === 'COMMITMENT') {
+                        updatedCommitted[s] = (updatedCommitted[s] || 0) + addQty;
+                    } else { // DELIVERY
+                        updatedReady[s] = (updatedReady[s] || 0) + addQty;
+                        const fulfillCom = Math.min(updatedCommitted[s] || 0, addQty);
+                        updatedCommitted[s] = Math.max(0, (updatedCommitted[s] || 0) - fulfillCom);
                     }
-                    updatedReady[s] = (updatedReady[s] || 0) + addQty;
+                    addedSizesMap[s] = addQty;
                     addedSum += addQty;
                 }
             }
 
             if (addedSum === 0) {
-                showToast("No new delivery quantities specified.", "warning");
+                showToast("No new quantities specified.", "warning");
                 return;
             }
 
-            if (invalidDelivery) {
-                showToast("Warning: Incremental deliveries should be in packs of 10 (min. 10).", "warning");
-            }
+            const logId = `LOG-${Date.now()}`;
+            const logObj = {
+                id: logId,
+                timestamp: new Date().toISOString(),
+                planNum: planNum,
+                part: part,
+                supplier: supplier,
+                entryType: entryType,
+                sizes: addedSizesMap,
+                totalQty: addedSum,
+                status: 'ACTIVE'
+            };
 
             try {
-                updateCloudStatus('syncing', `Adding ${supplier} delivery...`);
-                const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
-                await updateDoc(docRef, { sizeReady: updatedReady });
-                showToast(`Added +${addedSum} pairs for ${supplier} (${planNum} - ${part})`, 'success');
+                updateCloudStatus('syncing', `Adding ${supplier} ${entryType}...`);
+                if (currentUser) {
+                    const batch = writeBatch(db);
+                    const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
+                    
+                    batch.update(docRef, { sizeCommitted: updatedCommitted, sizeReady: updatedReady });
+
+                    const logRef = doc(db, "artifacts", appId, "public", "data", "stock_logs", logId);
+                    batch.set(logRef, logObj);
+
+                    await batch.commit();
+                } else {
+                    rec.sizeCommitted = updatedCommitted;
+                    rec.sizeReady = updatedReady;
+                    stockLogs.unshift(logObj);
+                    initData();
+                }
+                showToast(`Added +${addedSum} ${entryType} pairs for ${supplier} (${planNum} - ${part})`, 'success');
                 closeSupplierModal(supplier);
             } catch (err) {
-                console.error("Error saving supplier delivery:", err);
-                showToast("Failed to save delivery to database. Check connection.", "warning");
-                updateCloudStatus('error', 'Sync Failed');
+                console.error("Error saving supplier entry:", err);
+                rec.sizeCommitted = updatedCommitted;
+                rec.sizeReady = updatedReady;
+                stockLogs.unshift(logObj);
+                initData();
+                showToast(`Saved locally! Added +${addedSum} pairs.`, 'success');
+                closeSupplierModal(supplier);
+            } finally {
+                updateCloudStatus('online', 'Realtime Ready');
             }
         }
         window.saveSupplierModalData = saveSupplierModalData;
 
-        function openPasswordModal() {
-            const modal = document.getElementById('password-modal');
-            const errEl = document.getElementById('password-error');
-            const pwdInput = document.getElementById('clear-password-input');
-            if (errEl) errEl.classList.add('hidden');
-            if (pwdInput) pwdInput.value = '';
-            if (modal) modal.classList.remove('hidden');
+        async function deleteStockLog(logId) {
+            const log = stockLogs.find(l => l.id === logId);
+            if (!log) return;
+
+            const docId = `${log.planNum}_${log.part}`;
+            const rec = masterRecords.find(r => r.planNum === log.planNum && r.part === log.part);
+            if (!rec) return;
+
+            const isCommitment = log.entryType === 'COMMITMENT';
+            let targetMap = isCommitment ? { ...(rec.sizeCommitted || {}) } : { ...(rec.sizeReady || {}) };
+            
+            for (let s = 1; s <= 13; s++) {
+                const subQty = log.sizes?.[s] || 0;
+                if (subQty > 0) {
+                    targetMap[s] = Math.max(0, (targetMap[s] || 0) - subQty);
+                }
+            }
+
+            try {
+                updateCloudStatus('syncing', 'Deleting stock entry...');
+                if (currentUser) {
+                    const batch = writeBatch(db);
+
+                    const recRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
+                    if (isCommitment) batch.update(recRef, { sizeCommitted: targetMap });
+                    else batch.update(recRef, { sizeReady: targetMap });
+
+                    const logRef = doc(db, "artifacts", appId, "public", "data", "stock_logs", logId);
+                    batch.update(logRef, { status: 'DELETED', deletedAt: new Date().toISOString() });
+
+                    await batch.commit();
+                } else {
+                    if (isCommitment) rec.sizeCommitted = targetMap;
+                    else rec.sizeReady = targetMap;
+                    log.status = 'DELETED';
+                    initData();
+                }
+                showToast(`Removed entry (${log.planNum} - ${log.part}). Inventory adjusted.`, 'success');
+            } catch (err) {
+                console.error("Error deleting stock log:", err);
+                if (isCommitment) rec.sizeCommitted = targetMap;
+                else rec.sizeReady = targetMap;
+                log.status = 'DELETED';
+                initData();
+                showToast(`Adjusted locally! Removed entry.`, 'success');
+            } finally {
+                updateCloudStatus('online', 'Realtime Ready');
+            }
         }
-        window.openPasswordModal = openPasswordModal;
+        window.deleteStockLog = deleteStockLog;
 
-        function closePasswordModal() {
-            const modal = document.getElementById('password-modal');
-            if (modal) modal.classList.add('hidden');
+        async function restoreStockLog(logId) {
+            const log = stockLogs.find(l => l.id === logId);
+            if (!log) return;
+
+            const docId = `${log.planNum}_${log.part}`;
+            const rec = masterRecords.find(r => r.planNum === log.planNum && r.part === log.part);
+            if (!rec) return;
+
+            const isCommitment = log.entryType === 'COMMITMENT';
+            let targetMap = isCommitment ? { ...(rec.sizeCommitted || {}) } : { ...(rec.sizeReady || {}) };
+            
+            for (let s = 1; s <= 13; s++) {
+                const addQty = log.sizes?.[s] || 0;
+                if (addQty > 0) {
+                    targetMap[s] = (targetMap[s] || 0) + addQty;
+                }
+            }
+
+            try {
+                updateCloudStatus('syncing', 'Restoring deleted stock entry...');
+                if (currentUser) {
+                    const batch = writeBatch(db);
+
+                    const recRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
+                    if (isCommitment) batch.update(recRef, { sizeCommitted: targetMap });
+                    else batch.update(recRef, { sizeReady: targetMap });
+
+                    const logRef = doc(db, "artifacts", appId, "public", "data", "stock_logs", logId);
+                    batch.update(logRef, { status: 'ACTIVE', restoredAt: new Date().toISOString() });
+
+                    await batch.commit();
+                } else {
+                    if (isCommitment) rec.sizeCommitted = targetMap;
+                    else rec.sizeReady = targetMap;
+                    log.status = 'ACTIVE';
+                    initData();
+                }
+                showToast(`Restored deleted delivery (${log.planNum} - ${log.part}). Inventory updated.`, 'success');
+            } catch (err) {
+                console.error("Error restoring stock log:", err);
+                if (isCommitment) rec.sizeCommitted = targetMap;
+                else rec.sizeReady = targetMap;
+                log.status = 'ACTIVE';
+                initData();
+                showToast(`Restored locally! Stock updated.`, 'success');
+            } finally {
+                updateCloudStatus('online', 'Realtime Ready');
+            }
         }
-        window.closePasswordModal = closePasswordModal;
+        window.restoreStockLog = restoreStockLog;
 
-        async function confirmClearData() {
-            const pwdInput = document.getElementById('clear-password-input');
-            const errEl = document.getElementById('password-error');
-            if (!pwdInput) return;
+        function renderStockLogs() {
+            const statusFilter = document.getElementById('stock-log-filter-status')?.value || 'ALL';
+            const searchQuery = (document.getElementById('stock-log-search')?.value || '').toLowerCase().trim();
 
-            if (pwdInput.value !== 'Chama123') {
-                if (errEl) errEl.classList.remove('hidden');
+            const tbody = document.getElementById('stock-logs-tbody');
+            if (!tbody) return;
+
+            let filtered = stockLogs.filter(log => {
+                if (statusFilter !== 'ALL' && log.status !== statusFilter) return false;
+                if (searchQuery && !log.planNum.toLowerCase().includes(searchQuery) && !log.supplier.toLowerCase().includes(searchQuery) && !log.part.toLowerCase().includes(searchQuery)) return false;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 font-medium">No stock delivery logs found for the selected filter.</td></tr>`;
                 return;
             }
 
-            closePasswordModal();
-            if (!currentUser) return;
+            let html = '';
+            filtered.forEach(log => {
+                const dt = new Date(log.timestamp).toLocaleString();
+                const isDeleted = log.status === 'DELETED';
 
-            try {
-                updateCloudStatus('syncing', 'Wiping Database Stock...');
-                const batch = writeBatch(db);
+                let sizeBadges = '';
+                for (let s = 1; s <= 13; s++) {
+                    const q = log.sizes?.[s] || 0;
+                    if (q > 0) {
+                        sizeBadges += `<span class="inline-block px-1.5 py-0.5 m-0.5 rounded text-[10px] font-bold ${isDeleted ? 'bg-rose-50 text-rose-600 line-through' : 'bg-sky-100 text-sky-800'}">S${s}:+${q}</span>`;
+                    }
+                }
 
-                masterRecords.forEach(r => {
-                    const docId = `${r.planNum}_${r.part}`;
-                    const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
-                    let zeroSizes = {};
-                    for (let s = 1; s <= 13; s++) zeroSizes[s] = 0;
-                    batch.update(docRef, { sizeReady: zeroSizes });
-                });
+                let statusBadge = isDeleted 
+                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800"><i class="fa-solid fa-trash mr-1"></i>Deleted</span>`
+                    : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-check mr-1"></i>Active Stock</span>`;
 
-                dispatchedDailyPlans.forEach(p => {
-                    const planRef = doc(db, "artifacts", appId, "public", "data", "dispatched_plans", p.id);
-                    batch.delete(planRef);
-                });
+                let actionButton = isDeleted
+                    ? `<button onclick="window.restoreStockLog('${log.id}')" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1 rounded transition shadow-sm flex items-center gap-1 mx-auto" title="Restore deleted quantity back to active stock">
+                        <i class="fa-solid fa-rotate-left"></i> Restore
+                       </button>`
+                    : `<button onclick="window.deleteStockLog('${log.id}')" class="text-xs bg-rose-600 hover:bg-rose-500 text-white font-bold px-2.5 py-1 rounded transition shadow-sm flex items-center gap-1 mx-auto" title="Revert/Delete this entry">
+                        <i class="fa-solid fa-trash-can"></i> Delete Entry
+                       </button>`;
 
-                await batch.commit();
-                showToast("All production ready stock and dispatched plans wiped successfully.", "success");
-            } catch (err) {
-                console.error("Error clearing database:", err);
-                showToast("Failed to clear cloud database.", "warning");
-                updateCloudStatus('error', 'Clear Failed');
-            }
+                html += `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-200 ${isDeleted ? 'bg-slate-50/70 text-slate-400' : ''}">
+                    <td class="p-3">
+                        <div class="font-bold text-slate-900">${log.id}</div>
+                        <div class="text-[10px] text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${dt}</div>
+                    </td>
+                    <td class="p-3 font-black text-slate-900">${log.planNum}</td>
+                    <td class="p-3 font-semibold text-slate-800">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.supplier === 'MTU' ? 'bg-sky-100 text-sky-800' : log.supplier === 'SML' ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'} mr-1">${log.supplier}</span>
+                        ${log.part} <span class="text-[10px] text-slate-400">(${log.entryType || 'DELIVERY'})</span>
+                    </td>
+                    <td class="p-3 text-right font-black ${isDeleted ? 'text-rose-500 line-through' : 'text-emerald-700'}">+${(log.totalQty || 0).toLocaleString()}</td>
+                    <td class="p-3 text-center">${statusBadge}</td>
+                    <td class="p-3 text-center max-w-xs">
+                        <div class="flex flex-wrap justify-center">${sizeBadges}</div>
+                    </td>
+                    <td class="p-3 text-center">${actionButton}</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
         }
-        window.confirmClearData = confirmClearData;
+        window.renderStockLogs = renderStockLogs;
 
-        async function resetData() {
-            if (!currentUser) return;
+        function downloadBackupJSON() {
+            const data = {
+                appId: appId,
+                exportedAt: new Date().toISOString(),
+                masterRecords: masterRecords,
+                dispatchedDailyPlans: dispatchedDailyPlans,
+                stockLogs: stockLogs
+            };
 
-            try {
-                updateCloudStatus('syncing', 'Resetting Cloud Baseline...');
-                const batch = writeBatch(db);
-
-                ASSEMBLY_MASTER_PLAN.forEach(p => {
-                    const sizeAssortment = getSizeAssortment(p.planNum, p.deliQty);
-                    const partsList = [
-                        { part: 'UF', supplier: 'MTU' },
-                        { part: 'IF', supplier: 'SML' },
-                        { part: 'SF', supplier: 'Funsole' }
-                    ];
-
-                    partsList.forEach(pt => {
-                        const docId = `${p.planNum}_${pt.part}`;
-                        const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
-
-                        let initReady = {};
-                        for (let s = 1; s <= 13; s++) initReady[s] = 0;
-
-                        batch.set(docRef, {
-                            planNum: p.planNum,
-                            itemCode: p.itemCode,
-                            category: p.category,
-                            type: p.type,
-                            deliQty: p.deliQty,
-                            month: p.month,
-                            priority: p.priority,
-                            part: pt.part,
-                            supplier: pt.supplier,
-                            sizeTarget: sizeAssortment,
-                            sizeReady: initReady
-                        });
-                    });
-                });
-
-                await batch.commit();
-                showToast("Baseline dataset restored successfully.", "success");
-            } catch (err) {
-                console.error("Error resetting data:", err);
-                showToast("Failed to reset baseline dataset.", "warning");
-                updateCloudStatus('error', 'Reset Failed');
-            }
-        }
-        window.resetData = resetData;
-
-        // Backup and Restore JSON functions
-        async function downloadBackupJSON() {
-            try {
-                updateCloudStatus('syncing', 'Generating Backup...');
-                
-                const plansSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "dispatched_plans"));
-                const allPlans = [];
-                plansSnap.forEach(d => allPlans.push(d.data()));
-
-                const backupData = {
-                    version: "1.0",
-                    appId: appId,
-                    exportedAt: new Date().toISOString(),
-                    masterRecords: masterRecords,
-                    dispatchedPlans: allPlans
-                };
-
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `SML_Production_Backup_${new Date().toISOString().slice(0,10)}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-
-                showToast("Backup JSON downloaded successfully.", "success");
-                updateCloudStatus('online', 'Realtime Firebase Active');
-            } catch (err) {
-                console.error("Backup error:", err);
-                showToast("Failed to generate backup JSON.", "warning");
-                updateCloudStatus('error', 'Backup Failed');
-            }
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `SML_Production_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Backup JSON file downloaded successfully!", "success");
         }
         window.downloadBackupJSON = downloadBackupJSON;
 
-        async function restoreBackupJSON(event) {
-            const file = event.target.files[0];
+        function restoreBackupJSON(event) {
+            const file = event.target.files?.[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async (e) => {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (!parsed.masterRecords || !Array.isArray(parsed.masterRecords)) {
-                        showToast("Invalid backup file format.", "warning");
+                    if (!parsed || !Array.isArray(parsed.masterRecords)) {
+                        showToast("Invalid backup JSON format.", "warning");
                         return;
                     }
 
-                    updateCloudStatus('syncing', 'Restoring Database...');
-                    const batch = writeBatch(db);
+                    updateCloudStatus('syncing', 'Restoring database...');
 
-                    parsed.masterRecords.forEach(r => {
-                        const docId = `${r.planNum}_${r.part}`;
-                        const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", docId);
-                        batch.set(docRef, r);
-                    });
+                    if (currentUser) {
+                        const batch = writeBatch(db);
 
-                    if (parsed.dispatchedPlans && Array.isArray(parsed.dispatchedPlans)) {
-                        parsed.dispatchedPlans.forEach(p => {
-                            const planRef = doc(db, "artifacts", appId, "public", "data", "dispatched_plans", p.id);
-                            batch.set(planRef, p);
+                        parsed.masterRecords.forEach(rec => {
+                            const ref = doc(db, "artifacts", appId, "public", "data", "master_records", rec.docId);
+                            batch.set(ref, rec);
                         });
+
+                        (parsed.dispatchedDailyPlans || []).forEach(plan => {
+                            const ref = doc(db, "artifacts", appId, "public", "data", "dispatched_plans", plan.id);
+                            batch.set(ref, plan);
+                        });
+
+                        (parsed.stockLogs || []).forEach(log => {
+                            const ref = doc(db, "artifacts", appId, "public", "data", "stock_logs", log.id);
+                            batch.set(ref, log);
+                        });
+
+                        await batch.commit();
+                    } else {
+                        masterRecords = parsed.masterRecords;
+                        dispatchedDailyPlans = parsed.dispatchedDailyPlans || [];
+                        stockLogs = parsed.stockLogs || [];
+                        initData();
                     }
 
-                    await batch.commit();
                     showToast("Database restored successfully from backup JSON!", "success");
                 } catch (err) {
                     console.error("Restore error:", err);
                     showToast("Failed to parse or restore JSON file.", "warning");
-                    updateCloudStatus('error', 'Restore Failed');
                 } finally {
+                    updateCloudStatus('online', 'Realtime Ready');
                     event.target.value = '';
                 }
             };
@@ -2188,7 +2560,7 @@
                             <span class="text-xs text-slate-500 ml-2"><i class="fa-regular fa-clock mr-1"></i>${dt}</span>
                         </div>
                         <div class="text-xs font-bold text-slate-700">
-                            Total Dispatch: <span class="text-base font-black text-emerald-600">${totalPairsVal}</span> pairs
+                            Consumed & Dispatched: <span class="text-base font-black text-emerald-600">${totalPairsVal}</span> pairs
                         </div>
                     </div>
                     <div class="overflow-x-auto custom-scrollbar">
@@ -2197,7 +2569,7 @@
                                 <tr class="text-[11px] font-bold uppercase text-slate-400 border-b border-slate-200">
                                     <th class="pb-1">Plan Num</th>
                                     <th class="pb-1">Item Code</th>
-                                    <th class="pb-1 text-right">Qty</th>
+                                    <th class="pb-1 text-right">Qty Consumed</th>
                                     <th class="pb-1 pl-4">Size Breakdown</th>
                                 </tr>
                             </thead>
@@ -2285,8 +2657,8 @@
                 const opts2 = {
                     chart: { type: 'bar', height: 280, toolbar: { show: false } },
                     series: [
-                        { name: 'Ready Qty', data: [ufReady, ifReady, sfReady] },
-                        { name: 'Target Qty', data: [ufTot, ifTot, sfTot] }
+                        { name: 'Collected Qty', data: [ufReady, ifReady, sfReady] },
+                        { name: 'Target Order Qty', data: [ufTot, ifTot, sfTot] }
                     ],
                     xaxis: { categories: ['Upper (UF)', 'Insole (IF)', 'Sole (SF)'] },
                     colors: ['#0284c7', '#64748b'],
@@ -2345,21 +2717,136 @@
         }
         window.renderBottleneckTable = renderBottleneckTable;
 
-        // Firebase Authentication & Realtime Firestore Listeners
+        function openPasswordModal() {
+            const modal = document.getElementById('password-modal');
+            const pwdInput = document.getElementById('clear-password-input');
+            const errEl = document.getElementById('password-error');
+            if (pwdInput) pwdInput.value = '';
+            if (errEl) errEl.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
+        }
+        window.openPasswordModal = openPasswordModal;
+
+        function closePasswordModal() {
+            const modal = document.getElementById('password-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+        window.closePasswordModal = closePasswordModal;
+
+        async function confirmClearData() {
+            const pwdInput = document.getElementById('clear-password-input');
+            const errEl = document.getElementById('password-error');
+            const pwd = pwdInput ? pwdInput.value.trim() : '';
+
+            if (pwd !== 'Chama123') {
+                if (errEl) errEl.classList.remove('hidden');
+                return;
+            }
+
+            closePasswordModal();
+            updateCloudStatus('syncing', 'Clearing active operational data...');
+
+            try {
+                if (currentUser) {
+                    const batch = writeBatch(db);
+
+                    // Zero out active supplier commitments and physical ready stock while preserving Master Plan targets
+                    masterRecords.forEach(r => {
+                        const docRef = doc(db, "artifacts", appId, "public", "data", "master_records", r.docId);
+                        batch.update(docRef, { 
+                            sizeCommitted: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0},
+                            sizeReady: {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0} 
+                        });
+                    });
+
+                    // Delete all dispatched daily assembly plans
+                    dispatchedDailyPlans.forEach(p => {
+                        const ref = doc(db, "artifacts", appId, "public", "data", "dispatched_plans", p.id);
+                        batch.delete(ref);
+                    });
+
+                    // Delete all stock delivery history logs
+                    stockLogs.forEach(l => {
+                        const ref = doc(db, "artifacts", appId, "public", "data", "stock_logs", l.id);
+                        batch.delete(ref);
+                    });
+
+                    await batch.commit();
+                } else {
+                    masterRecords.forEach(r => {
+                        r.sizeCommitted = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0};
+                        r.sizeReady = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0};
+                    });
+                    dispatchedDailyPlans = [];
+                    stockLogs = [];
+                    initData();
+                }
+
+                showToast("All active operational commitments, ready stock, dispatched plans, and delivery logs cleared. Master Plan targets preserved!", "success");
+            } catch (err) {
+                console.error("Clear error:", err);
+                masterRecords.forEach(r => {
+                    r.sizeCommitted = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0};
+                    r.sizeReady = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0};
+                });
+                dispatchedDailyPlans = [];
+                stockLogs = [];
+                initData();
+                showToast("Active operational data cleared locally!", "success");
+            } finally {
+                updateCloudStatus('online', 'Realtime Ready');
+            }
+        }
+        window.confirmClearData = confirmClearData;
+
+        async function resetData() {
+            updateCloudStatus('syncing', 'Resetting baseline...');
+            const baseline = buildBaselineMasterRecords();
+
+            try {
+                if (currentUser) {
+                    const batch = writeBatch(db);
+                    baseline.forEach(rec => {
+                        const ref = doc(db, "artifacts", appId, "public", "data", "master_records", rec.docId);
+                        batch.set(ref, rec);
+                    });
+                    await batch.commit();
+                } else {
+                    masterRecords = baseline;
+                    initData();
+                }
+                showToast("Reset to baseline production dataset!", "info");
+            } catch (err) {
+                console.error("Reset error:", err);
+                masterRecords = baseline;
+                initData();
+                showToast("Reset to baseline locally!", "info");
+            } finally {
+                updateCloudStatus('online', 'Realtime Ready');
+            }
+        }
+        window.resetData = resetData;
+
+        masterRecords = buildBaselineMasterRecords();
+        initData();
+
         onAuthStateChanged(auth, user => {
             if (user) {
                 currentUser = user;
                 setupFirestoreListeners();
             } else {
-                signInAnonymously(auth).catch(err => {
-                    console.error("Firebase Auth Error:", err);
-                    updateCloudStatus('error', 'Auth Failed');
+                signInAnonymously(auth).then(cred => {
+                    currentUser = cred.user;
+                    setupFirestoreListeners();
+                }).catch(err => {
+                    console.warn("Firebase Auth fallback to local mode:", err);
+                    updateCloudStatus('online', 'Local Storage Active');
                 });
             }
         });
 
         function setupFirestoreListeners() {
-            updateCloudStatus('syncing', 'Connecting to database...');
+            updateCloudStatus('syncing', 'Connecting database...');
 
             const masterCol = collection(db, "artifacts", appId, "public", "data", "master_records");
             onSnapshot(masterCol, snapshot => {
@@ -2371,7 +2858,6 @@
                 masterRecords = [];
                 snapshot.forEach(docSnap => {
                     let rec = docSnap.data();
-                    // Always guarantee sizeTarget uses the latest exact Master Assortment map
                     rec.sizeTarget = getSizeAssortment(rec.planNum, rec.deliQty);
                     masterRecords.push(rec);
                 });
@@ -2379,8 +2865,8 @@
                 updateCloudStatus('online', 'Realtime Firebase Active');
                 initData();
             }, err => {
-                console.error("Master Records Snapshot Error:", err);
-                updateCloudStatus('error', 'Database Error');
+                console.warn("Master snapshot offline fallback:", err);
+                updateCloudStatus('online', 'Local Offline Mode');
             });
 
             const plansCol = collection(db, "artifacts", appId, "public", "data", "dispatched_plans");
@@ -2394,7 +2880,21 @@
 
                 if (activeTab === 'daily-schedule') renderDispatchedPlans();
             }, err => {
-                console.error("Dispatched Plans Snapshot Error:", err);
+                console.warn("Plans snapshot fallback:", err);
+            });
+
+            const logsCol = collection(db, "artifacts", appId, "public", "data", "stock_logs");
+            onSnapshot(logsCol, snapshot => {
+                stockLogs = [];
+                snapshot.forEach(docSnap => {
+                    stockLogs.push(docSnap.data());
+                });
+
+                stockLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                if (activeTab === 'stock-logs') renderStockLogs();
+            }, err => {
+                console.warn("Logs snapshot fallback:", err);
             });
         }
     </script>

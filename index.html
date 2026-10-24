@@ -3,382 +3,767 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SML Box Production & Supplier Entry Hub</title>
+  <title>SML Box Production & Supplier Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-    .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 600; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #334155; }
+    .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 700; background-color: #eff6ff; }
     .badge-f1 { background-color: #dbeafe; color: #1e40af; }
     .badge-f2 { background-color: #dcfce7; color: #166534; }
     .badge-f3 { background-color: #fef3c7; color: #92400e; }
     .badge-eva { background-color: #f3e8ff; color: #6b21a8; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="text-slate-800 antialiased">
+<body class="bg-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
 
-  <!-- HEADER -->
-  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
-      <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-boxes-packing text-2xl text-blue-400"></i>
-        <div>
-          <h1 class="text-xl font-bold tracking-wide">SML BOX PRODUCTION & SUPPLIER ENTRY HUB</h1>
-          <p class="text-xs text-slate-400">11.1 Hours Shift Capacity • Multi-Supplier Stock Entry • Pack of 10 Enforced</p>
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- CUSTOM CONFIRMATION MODAL -->
+  <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 border border-slate-200 animate-in fade-in zoom-in duration-150">
+      <div class="text-center space-y-3">
+        <div id="confirmModalIcon" class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl">
+          <i class="fa-solid fa-circle-question"></i>
         </div>
+        <h3 id="confirmModalTitle" class="text-lg font-bold text-slate-800">Are you sure?</h3>
+        <p id="confirmModalMessage" class="text-xs text-slate-500">Please confirm your action.</p>
       </div>
-      
-      <div class="flex flex-wrap items-center gap-2">
-        <button onclick="openSupplierModal('MTU')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-industry"></i> MTU Entry Box
-        </button>
-        <button onclick="openSupplierModal('SML')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-warehouse"></i> SML Entry Box
-        </button>
-        <button onclick="openSupplierModal('Funsole')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-shoe-prints"></i> Funsole Entry Box
-        </button>
-        <button onclick="exportBackupJSON()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center gap-1 shadow">
-          <i class="fa-solid fa-download"></i> Backup
-        </button>
-        <label class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 shadow">
-          <i class="fa-solid fa-upload"></i> Restore
-          <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="restoreBackupJSON(event)">
-        </label>
-        <button onclick="openClearDataModal()" class="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center gap-1 shadow">
-          <i class="fa-solid fa-trash-can"></i> Clear Data
-        </button>
+      <div class="flex justify-end gap-3 mt-6">
+        <button id="confirmCancelBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Cancel</button>
+        <button id="confirmActionBtn" class="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition">Confirm</button>
       </div>
-    </div>
-  </header>
-
-  <!-- SHIFT METRICS BANNER -->
-  <section class="bg-slate-800 text-slate-200 border-b border-slate-700 px-4 py-2 text-xs">
-    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
-      <div class="flex items-center gap-6">
-        <span><i class="fa-regular fa-clock text-blue-400 mr-1"></i> Shift Limit: <strong>11.1 Hours / Day</strong></span>
-        <span><i class="fa-solid fa-sliders text-emerald-400 mr-1"></i> Line Efficiencies: <strong>100% | 75% | 50%</strong></span>
-        <span><i class="fa-solid fa-cubes text-amber-400 mr-1"></i> Entry Constraint: <strong>Min 10 pairs & Multiples of 10</strong></span>
-      </div>
-      <div id="liveTimeClock" class="font-mono text-slate-400"></div>
-    </div>
-  </section>
-
-  <!-- NAVIGATION TABS -->
-  <div class="bg-white border-b border-slate-200 shadow-sm sticky top-[61px] z-30">
-    <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-6">
-      <button onclick="switchTab('planner')" id="tab-planner" class="tab-btn py-3 px-2 text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap active flex items-center gap-2">
-        <i class="fa-solid fa-sliders"></i> Assembly Daily Planner & Capacity
-      </button>
-      <button onclick="switchTab('supplier')" id="tab-supplier" class="tab-btn py-3 px-2 text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
-        <i class="fa-solid fa-boxes-stacked"></i> Supplier Ready Inventory
-      </button>
-      <button onclick="switchTab('master')" id="tab-master" class="tab-btn py-3 px-2 text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
-        <i class="fa-solid fa-list-check"></i> Assembly Master Plan
-      </button>
-      <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-2 text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
-        <i class="fa-solid fa-clock-rotate-left"></i> Dispatched Plan History
-      </button>
-      <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn py-3 px-2 text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
-        <i class="fa-solid fa-receipt"></i> Delivery & Restore Logs
-      </button>
     </div>
   </div>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-
-    <!-- KPI CARDS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
+  <!-- MAIN HEADER BAR -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i class="fa-solid fa-boxes-packing text-xl text-white"></i>
+        </div>
         <div>
-          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Master Plans</p>
-          <h3 id="kpi-master-plans" class="text-2xl font-bold text-slate-800 mt-1">60</h3>
-          <p class="text-xs text-slate-500 mt-1">Excludes GC-0449, GC-0451 & PU-Cool</p>
-        </div>
-        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xl">
-          <i class="fa-solid fa-clipboard-list"></i>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-extrabold tracking-wide text-white">SML BOX PRODUCTION & SUPPLIER HUB</h1>
+            <span id="roleHeaderBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30">Management</span>
+          </div>
+          <p class="text-xs text-slate-400">11.1 Hours Shift Capacity • Multi-Supplier Entry • Pack of 10 Enforced</p>
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Collected Ready Sets</p>
-          <h3 id="kpi-ready-sets" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
-          <p class="text-xs text-slate-500 mt-1">Complete UF + IF + SF Pairs</p>
+      <!-- Right Header Actions / User Status -->
+      <div id="headerUserNav" class="hidden items-center gap-3">
+        <div class="text-right hidden sm:block">
+          <div id="hdrUserName" class="text-xs font-bold text-white">Logged User</div>
+          <div id="hdrUserRole" class="text-[10px] text-slate-400">Role Title</div>
         </div>
-        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xl">
-          <i class="fa-solid fa-check-double"></i>
-        </div>
-      </div>
+        
+        <button onclick="openCredentialsModal()" id="btnManageCreds" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-lg font-medium transition items-center gap-1.5 border border-slate-700">
+          <i class="fa-solid fa-key text-amber-400"></i> Logins
+        </button>
 
-      <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Planned Assembly Hours</p>
-          <h3 id="kpi-planned-hours" class="text-2xl font-bold text-amber-600 mt-1">0.0 hrs</h3>
-          <p class="text-xs text-slate-500 mt-1">Against 11.1h Shift Limit</p>
-        </div>
-        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-xl">
-          <i class="fa-solid fa-stopwatch"></i>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Dispatched Plans Total</p>
-          <h3 id="kpi-dispatched-total" class="text-2xl font-bold text-indigo-600 mt-1">0 pairs</h3>
-          <p class="text-xs text-slate-500 mt-1">Sent to Production Line</p>
-        </div>
-        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-xl">
-          <i class="fa-solid fa-truck-fast"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 1: PLANNER & SHIFT BALANCER -->
-    <div id="view-planner" class="space-y-6">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4 pb-4 border-b border-slate-100">
-          <div>
-            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-calculator text-blue-600"></i> Assembly Daily Plan & Shift Capacity Balancer
-            </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Select line efficiency, match available inventory, and balance planned hours against 11.1 hours shift capacity.</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-3">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 flex items-center gap-2">
-              <label for="globalLineEfficiency" class="text-xs font-semibold text-blue-900 whitespace-nowrap">
-                <i class="fa-solid fa-gauge-high text-blue-600"></i> Line Efficiency:
-              </label>
-              <select id="globalLineEfficiency" onchange="onLineEfficiencyChange()" class="bg-white border border-blue-300 text-blue-900 text-xs font-bold rounded px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
-                <option value="100">100% Efficiency (Full Rate)</option>
-                <option value="75" selected>75% Efficiency (Medium Rate)</option>
-                <option value="50">50% Efficiency (Ramp-up Rate)</option>
-              </select>
-            </div>
-
-            <button onclick="autoFillPlanMaxSets()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill Max Matchable Sets
-            </button>
-            <button onclick="clearPlannerInputs()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition">
-              Reset Inputs
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Search Plan / Item Code</label>
-            <input type="text" id="plannerSearch" oninput="renderPlannerMatrix()" placeholder="e.g. 26-09-203GR or GD-0428" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Filter Sales Month</label>
-            <select id="plannerMonthFilter" onchange="renderPlannerMatrix()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
-              <option value="ALL">All Sales Months (SEP, OCT, NOV)</option>
-              <option value="SEP">September (SEP)</option>
-              <option value="OCT">October (OCT)</option>
-              <option value="NOV">November (NOV)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Filter Item Type</label>
-            <select id="plannerTypeFilter" onchange="renderPlannerMatrix()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
-              <option value="ALL">All Types (F1, F2, F3, EVA)</option>
-              <option value="F1">Type F1 (300/225/150 p/h)</option>
-              <option value="F2">Type F2 (250/188/125 p/h)</option>
-              <option value="F3">Type F3 (120/90/60 p/h)</option>
-              <option value="EVA">Type EVA (300/225/150 p/h)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-500 mb-1">Stock Readiness Status</label>
-            <select id="plannerStockFilter" onchange="renderPlannerMatrix()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
-              <option value="ALL">Show All Items</option>
-              <option value="READY">Ready Matchable Stock Only (>0)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div id="capacitySummaryBar" class="bg-gradient-to-r from-slate-900 to-blue-950 text-white rounded-xl shadow-md p-4 flex flex-wrap justify-between items-center gap-4">
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
-            <i class="fa-solid fa-clock"></i>
-          </div>
-          <div>
-            <span class="text-xs text-slate-400 uppercase tracking-wider block font-medium">Daily Assembly Shift Capacity Load</span>
-            <div class="flex items-baseline gap-2">
-              <span id="totalPlannerHoursText" class="text-2xl font-bold text-amber-400">0.0 hrs</span>
-              <span class="text-xs text-slate-300">/ 11.1 hrs Maximum Shift Capacity</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex-1 max-w-md mx-4">
-          <div class="flex justify-between text-xs text-slate-300 mb-1">
-            <span>Shift Utilization Rate</span>
-            <span id="shiftCapacityPercentText">0.0%</span>
-          </div>
-          <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
-            <div id="capacityProgressBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
-          </div>
-        </div>
-
-        <button onclick="dispatchAssemblyDailyPlanBatch()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 shadow-lg">
-          <i class="fa-solid fa-paper-plane"></i> Dispatch Daily Assembly Plan
+        <button onclick="logoutUser()" class="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto max-h-[600px]">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-800 text-slate-200 sticky top-0 z-20 shadow-sm">
-              <tr>
-                <th class="p-3 border-b border-slate-700 font-semibold w-28">Plan Number</th>
-                <th class="p-3 border-b border-slate-700 font-semibold w-20">Item Code</th>
-                <th class="p-3 border-b border-slate-700 font-semibold w-16">Type</th>
-                <th class="p-3 border-b border-slate-700 font-semibold w-24">Hourly Target</th>
-                <th class="p-3 border-b border-slate-700 font-semibold w-24">Matchable Stock</th>
-                <th class="p-3 border-b border-slate-700 font-semibold text-center" colspan="13">Size Assortment Target & Assembly Quantities (Sizes 01 to 13)</th>
-                <th class="p-3 border-b border-slate-700 font-semibold w-24 text-right">Planned Pairs</th>
-                <th class="p-3 border-b border-slate-700 font-semibold w-24 text-right">Est. Hours</th>
-              </tr>
-            </thead>
-            <tbody id="plannerTableBody" class="divide-y divide-slate-200"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
+  </header>
 
-    <!-- TAB 2: SUPPLIER MONITOR -->
-    <div id="view-supplier" class="space-y-6 hidden">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+  <!-- SHIFT & SYSTEM METRICS BAR -->
+  <section id="systemMetricsBanner" class="bg-slate-800 text-slate-300 border-b border-slate-700 px-4 py-2 text-xs hidden">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+      <div class="flex flex-wrap items-center gap-6">
+        <span><i class="fa-regular fa-clock text-blue-400 mr-1.5"></i> Shift Capacity: <strong class="text-white">11.1 Hours / Day</strong></span>
+        <span><i class="fa-solid fa-sliders text-emerald-400 mr-1.5"></i> Efficiencies: <strong class="text-white">100% | 75% | 50%</strong></span>
+        <span><i class="fa-solid fa-layer-group text-amber-400 mr-1.5"></i> Entry Constraint: <strong class="text-white">Min 10 pairs & Multiples of 10</strong></span>
+      </div>
+      <div id="liveTimeClock" class="font-mono text-slate-400 text-right"></div>
+    </div>
+  </section>
+
+  <!-- AUTHENTICATION / LOGIN VIEW -->
+  <div id="authView" class="flex-1 flex items-center justify-center p-4">
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 my-8">
+      
+      <!-- Left Info Banner -->
+      <div class="md:col-span-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 p-8 text-white flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl border border-blue-400/30">
+            <i class="fa-solid fa-boxes-packing"></i>
+          </div>
           <div>
-            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-boxes-stacked text-blue-600"></i> Supplier Ready Inventory & Component Readiness
-            </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Component readiness comparison across MTU, SML, and Funsole for Upper (UF), Insole (IF), and Sole (SF).</p>
+            <h2 class="text-2xl font-black tracking-tight text-white">SML Entry Hub</h2>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">Multi-Role Portal for Production Status Monitoring, Supplier Stock Submissions (SML, MTU, Funsole), and Collecting Point Receiving & Dispatch.</p>
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-6 border-t border-slate-800 text-xs text-slate-300">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Multi-Supplier Component Entry
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="openSupplierModal('MTU')" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-medium">MTU Entry Box</button>
-            <button onclick="openSupplierModal('SML')" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded font-medium">SML Entry Box</button>
-            <button onclick="openSupplierModal('Funsole')" class="bg-purple-600 text-white text-xs px-3 py-1.5 rounded font-medium">Funsole Entry Box</button>
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Collecting Point Verification Hub
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Assembly Shift Hour Balancer
           </div>
         </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-              <tr>
-                <th class="p-2.5">Plan Number</th>
-                <th class="p-2.5">Item Code</th>
-                <th class="p-2.5">Type</th>
-                <th class="p-2.5 text-center">Upper (UF) Ready</th>
-                <th class="p-2.5 text-center">Insole (IF) Ready</th>
-                <th class="p-2.5 text-center">Sole (SF) Ready</th>
-                <th class="p-2.5 text-center font-bold text-emerald-700">Complete Sets</th>
-                <th class="p-2.5 text-center">Target Order</th>
-                <th class="p-2.5">Bottleneck Component</th>
-              </tr>
-            </thead>
-            <tbody id="supplierMonitorTableBody" class="divide-y divide-slate-200"></tbody>
-          </table>
-        </div>
       </div>
-    </div>
 
-    <!-- TAB 3: MASTER PLAN TABLE -->
-    <div id="view-master" class="space-y-6 hidden">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-blue-600"></i> Active Master Order Assortments & Hourly Targets
-        </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-800 text-slate-200 font-semibold">
-              <tr>
-                <th class="p-2.5">Plan Number</th>
-                <th class="p-2.5">Item Code</th>
-                <th class="p-2.5">Month</th>
-                <th class="p-2.5">Category</th>
-                <th class="p-2.5">Type</th>
-                <th class="p-2.5 text-right">Order Qty</th>
-                <th class="p-2.5 text-center" colspan="13">Size Breakdown Targets (Sizes 01 - 13)</th>
-                <th class="p-2.5 text-right">Hourly Rate (100%/75%/50%)</th>
-              </tr>
-            </thead>
-            <tbody id="masterPlanTableBody" class="divide-y divide-slate-200"></tbody>
-          </table>
+      <!-- Right Login Form -->
+      <div class="md:col-span-7 p-8 space-y-6 flex flex-col justify-center">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">System Portal Login</h3>
+          <p class="text-xs text-slate-500 mt-1">Select 1-click quick login or enter credentials below.</p>
         </div>
-      </div>
-    </div>
 
-    <!-- TAB 4: DISPATCHED PLAN HISTORY -->
-    <div id="view-history" class="space-y-6 hidden">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4 pb-3 border-b border-slate-100">
+        <form onsubmit="handleLoginFormSubmit(event)" class="space-y-4">
           <div>
-            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Dispatched Daily Plan History
-            </h2>
-            <p class="text-xs text-slate-500">Download CSV reports or print shift line dispatches.</p>
+            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1">Username</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-xs"></i>
+              <input type="text" id="loginUsername" required placeholder="e.g. management, sml, mtu, funsole, collecting" class="w-full text-xs border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <input type="text" id="historySearch" oninput="renderDispatchedHistory()" placeholder="Search plan or dispatch ID..." class="text-xs border border-slate-300 rounded-lg p-2 outline-none">
-            <button onclick="exportAllHistoryCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-medium flex items-center gap-1">
-              <i class="fa-solid fa-file-csv"></i> Export All History CSV
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1">Password</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+              <input type="password" id="loginPassword" required placeholder="Enter password" class="w-full text-xs border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+          </button>
+        </form>
+
+        <!-- Quick Demo Login Selection -->
+        <div class="pt-4 border-t border-slate-100">
+          <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">1-Click Quick Demo Access</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <button onclick="quickLogin('management')" class="bg-slate-100 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 text-slate-700 p-2 rounded-xl text-left transition">
+              <div class="text-[11px] font-bold text-blue-700 flex items-center gap-1"><i class="fa-solid fa-user-shield"></i> Management</div>
+              <div class="text-[9px] text-slate-400 font-mono">Admin123</div>
+            </button>
+            <button onclick="quickLogin('sml')" class="bg-slate-100 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 text-slate-700 p-2 rounded-xl text-left transition">
+              <div class="text-[11px] font-bold text-emerald-700 flex items-center gap-1"><i class="fa-solid fa-warehouse"></i> SML Supplier</div>
+              <div class="text-[9px] text-slate-400 font-mono">SML123</div>
+            </button>
+            <button onclick="quickLogin('mtu')" class="bg-slate-100 hover:bg-sky-50 hover:border-sky-300 border border-slate-200 text-slate-700 p-2 rounded-xl text-left transition">
+              <div class="text-[11px] font-bold text-sky-700 flex items-center gap-1"><i class="fa-solid fa-industry"></i> MTU Supplier</div>
+              <div class="text-[9px] text-slate-400 font-mono">MTU123</div>
+            </button>
+            <button onclick="quickLogin('funsole')" class="bg-slate-100 hover:bg-purple-50 hover:border-purple-300 border border-slate-200 text-slate-700 p-2 rounded-xl text-left transition">
+              <div class="text-[11px] font-bold text-purple-700 flex items-center gap-1"><i class="fa-solid fa-shoe-prints"></i> Funsole</div>
+              <div class="text-[9px] text-slate-400 font-mono">Funsole123</div>
+            </button>
+            <button onclick="quickLogin('collecting')" class="bg-slate-100 hover:bg-amber-50 hover:border-amber-300 border border-slate-200 text-slate-700 p-2 rounded-xl text-left transition">
+              <div class="text-[11px] font-bold text-amber-700 flex items-center gap-1"><i class="fa-solid fa-dolly"></i> Collecting Pt.</div>
+              <div class="text-[9px] text-slate-400 font-mono">Collect123</div>
             </button>
           </div>
         </div>
 
-        <div id="historyPlanCardsContainer" class="space-y-4"></div>
       </div>
-    </div>
 
-    <!-- TAB 5: LOGS -->
-    <div id="view-logs" class="space-y-6 hidden">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-receipt text-blue-600"></i> Supplier Delivery Logs & Restore Trash
-            </h2>
-            <p class="text-xs text-slate-500">Revert mistaken delivery entries or restore deleted records.</p>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATED PORTAL APP WRAPPER -->
+  <div id="authenticatedApp" class="flex-1 hidden">
+
+    <!-- 1. MANAGEMENT / ADMIN DASHBOARD VIEW (READ ONLY STATUS & STOCK LEVEL MONITOR) -->
+    <div id="portal-management" class="space-y-6 pb-12 hidden">
+      
+      <!-- Management Navigation Bar -->
+      <div class="bg-white border-b border-slate-200 shadow-sm sticky top-[61px] z-30">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center overflow-x-auto">
+          <div class="flex space-x-2 sm:space-x-4">
+            <button onclick="switchMgmtTab('planner')" id="mgmt-tab-planner" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap active flex items-center gap-2">
+              <i class="fa-solid fa-chart-line"></i> Daily Plan & Capacity Status
+            </button>
+            <button onclick="switchMgmtTab('supplier')" id="mgmt-tab-supplier" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
+              <i class="fa-solid fa-boxes-stacked"></i> Supplier Ready Stock
+            </button>
+            <button onclick="switchMgmtTab('master')" id="mgmt-tab-master" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
+              <i class="fa-solid fa-list-check"></i> Master Assortment Plan
+            </button>
+            <button onclick="switchMgmtTab('history')" id="mgmt-tab-history" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left"></i> Dispatched History
+            </button>
+            <button onclick="switchMgmtTab('logs')" id="mgmt-tab-logs" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium text-slate-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-2">
+              <i class="fa-solid fa-receipt"></i> Logs & Reverts
+            </button>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="filterLogs('ACTIVE')" id="btn-log-active" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-medium">Active Logs</button>
-            <button onclick="filterLogs('DELETED')" id="btn-log-deleted" class="bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded font-medium">Deleted Trash</button>
+
+          <div class="flex items-center gap-2 py-2">
+            <button onclick="exportBackupJSON()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-medium transition flex items-center gap-1 shadow">
+              <i class="fa-solid fa-download"></i> Backup
+            </button>
+            <label class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1 shadow">
+              <i class="fa-solid fa-upload"></i> Restore
+              <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="restoreBackupJSON(event)">
+            </label>
+            <button onclick="openClearDataModal()" class="bg-red-600/80 hover:bg-red-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-medium transition flex items-center gap-1 shadow">
+              <i class="fa-solid fa-trash-can"></i> Clear Data
+            </button>
           </div>
         </div>
+      </div>
+
+      <!-- MAIN CONTAINER MANAGEMENT -->
+      <main class="max-w-7xl mx-auto px-4 space-y-6 pt-4">
+
+        <!-- KPI CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Master Plans</p>
+              <h3 id="kpi-master-plans" class="text-2xl font-extrabold text-slate-800 mt-1">60</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">Excludes GC-0449, GC-0451 & PU-Cool</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+              <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Collected Ready Sets</p>
+              <h3 id="kpi-ready-sets" class="text-2xl font-extrabold text-emerald-600 mt-1">0</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">Complete UF + IF + SF Pairs</p>
+            </div>
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+              <i class="fa-solid fa-check-double"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Planned Assembly Hours</p>
+              <h3 id="kpi-planned-hours" class="text-2xl font-extrabold text-amber-600 mt-1">0.0 hrs</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">Against 11.1h Shift Capacity</p>
+            </div>
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+              <i class="fa-solid fa-stopwatch"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Dispatched Plans Total</p>
+              <h3 id="kpi-dispatched-total" class="text-2xl font-extrabold text-indigo-600 mt-1">0 pairs</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">Sent to Production Line</p>
+            </div>
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+              <i class="fa-solid fa-truck-fast"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- MGMT TAB 1: DAILY PLAN STATUS (READ ONLY MONITOR FOR MANAGEMENT) -->
+        <div id="mgmt-view-planner" class="space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-eye text-blue-600"></i> Assembly Daily Plan & Shift Capacity Status
+                  </h2>
+                  <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
+                    <i class="fa-solid fa-lock"></i> Management Read-Only
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Monitor current stock readiness, matchable component sets, and planned runtime hours. Plan dispatching is authorized under Collecting Point Hub.</p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-2 flex items-center gap-2">
+                  <label for="globalLineEfficiency" class="text-xs font-semibold text-blue-900 whitespace-nowrap">
+                    <i class="fa-solid fa-gauge-high text-blue-600"></i> Line Efficiency:
+                  </label>
+                  <select id="globalLineEfficiency" onchange="onLineEfficiencyChange()" class="bg-white border border-blue-300 text-blue-900 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="100">100% Efficiency (Full Rate)</option>
+                    <option value="75" selected>75% Efficiency (Medium Rate)</option>
+                    <option value="50">50% Efficiency (Ramp-up Rate)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Search Plan / Item</label>
+                <input type="text" id="plannerSearch" oninput="renderPlannerMatrix()" placeholder="e.g. 26-09-203GR or GD-0428" class="w-full text-xs border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Filter Sales Month</label>
+                <select id="plannerMonthFilter" onchange="renderPlannerMatrix()" class="w-full text-xs border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="ALL">All Sales Months (SEP, OCT, NOV)</option>
+                  <option value="SEP">September (SEP)</option>
+                  <option value="OCT">October (OCT)</option>
+                  <option value="NOV">November (NOV)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Filter Item Type</label>
+                <select id="plannerTypeFilter" onchange="renderPlannerMatrix()" class="w-full text-xs border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="ALL">All Types (F1, F2, F3, EVA)</option>
+                  <option value="F1">Type F1 (300/225/150 p/h)</option>
+                  <option value="F2">Type F2 (250/188/125 p/h)</option>
+                  <option value="F3">Type F3 (120/90/60 p/h)</option>
+                  <option value="EVA">Type EVA (300/225/150 p/h)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Stock Readiness Status</label>
+                <select id="plannerStockFilter" onchange="renderPlannerMatrix()" class="w-full text-xs border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="ALL">Show All Items</option>
+                  <option value="READY">Ready Matchable Stock Only (>0)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- CAPACITY RUNNING SUMMARY BAR (MANAGEMENT READ-ONLY) -->
+          <div id="capacitySummaryBar" class="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white rounded-2xl shadow-lg p-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg border border-blue-400/20">
+                <i class="fa-solid fa-clock"></i>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Daily Assembly Shift Capacity Load</span>
+                <div class="flex items-baseline gap-2">
+                  <span id="totalPlannerHoursText" class="text-2xl font-extrabold text-amber-400">0.0 hrs</span>
+                  <span class="text-xs text-slate-300">/ 11.1 hrs Maximum Capacity</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 max-w-md mx-4">
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Shift Utilization Rate</span>
+                <span id="shiftCapacityPercentText" class="font-bold">0.0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div id="capacityProgressBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/80 border border-slate-700 text-amber-300 text-xs px-4 py-2.5 rounded-xl font-bold flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved text-amber-400"></i> Dispatching Conducted by Collecting Point
+            </div>
+          </div>
+
+          <!-- PLANNER MATRIX TABLE (MANAGEMENT MONITOR VIEW) -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto max-h-[600px]">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-800 text-slate-200 sticky top-0 z-20 shadow-sm">
+                  <tr>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-28">Plan Number</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-20">Item Code</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-16">Type</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-24">Hourly Rate</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-24">Matchable Sets</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold text-center" colspan="13">Size Assortment Target & Current Matchable Stock (Sizes 01 to 13)</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-24 text-right">Planned Pairs</th>
+                    <th class="p-3 border-b border-slate-700 font-semibold w-24 text-right">Est. Hours</th>
+                  </tr>
+                </thead>
+                <tbody id="plannerTableBody" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MGMT TAB 2: SUPPLIER MONITOR -->
+        <div id="mgmt-view-supplier" class="space-y-6 hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+              <div>
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <i class="fa-solid fa-boxes-stacked text-blue-600"></i> Supplier Ready Inventory & Component Readiness
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Component readiness comparison across MTU, SML, and Funsole for Upper (UF), Insole (IF), and Sole (SF).</p>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th class="p-3">Plan Number</th>
+                    <th class="p-3">Item Code</th>
+                    <th class="p-3">Type</th>
+                    <th class="p-3 text-center">Upper (UF) Ready</th>
+                    <th class="p-3 text-center">Insole (IF) Ready</th>
+                    <th class="p-3 text-center">Sole (SF) Ready</th>
+                    <th class="p-3 text-center font-bold text-emerald-700">Complete Sets</th>
+                    <th class="p-3 text-center">Target Order</th>
+                    <th class="p-3">Readiness Status</th>
+                  </tr>
+                </thead>
+                <tbody id="supplierMonitorTableBody" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MGMT TAB 3: MASTER PLAN -->
+        <div id="mgmt-view-master" class="space-y-6 hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-blue-600"></i> Active Master Order Assortments & Hourly Targets
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-800 text-slate-200 font-semibold">
+                  <tr>
+                    <th class="p-2.5">Plan Number</th>
+                    <th class="p-2.5">Item Code</th>
+                    <th class="p-2.5">Month</th>
+                    <th class="p-2.5">Category</th>
+                    <th class="p-2.5">Type</th>
+                    <th class="p-2.5 text-right">Order Qty</th>
+                    <th class="p-2.5 text-center" colspan="13">Size Breakdown Targets (Sizes 01 - 13)</th>
+                    <th class="p-2.5 text-right">Hourly Rates (100%/75%/50%)</th>
+                  </tr>
+                </thead>
+                <tbody id="masterPlanTableBody" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MGMT TAB 4: DISPATCHED HISTORY -->
+        <div id="mgmt-view-history" class="space-y-6 hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-4 pb-3 border-b border-slate-100">
+              <div>
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Dispatched Daily Plan History
+                </h2>
+                <p class="text-xs text-slate-500">Download CSV reports or view historical production dispatches.</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="text" id="historySearch" oninput="renderDispatchedHistory()" placeholder="Search dispatch ID or plan..." class="text-xs border border-slate-300 rounded-xl p-2 outline-none">
+                <button onclick="exportAllHistoryCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-xl font-semibold flex items-center gap-1.5 shadow">
+                  <i class="fa-solid fa-file-csv"></i> Export All History CSV
+                </button>
+              </div>
+            </div>
+
+            <div id="historyPlanCardsContainer" class="space-y-4"></div>
+          </div>
+        </div>
+
+        <!-- MGMT TAB 5: LOGS -->
+        <div id="mgmt-view-logs" class="space-y-6 hidden">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+              <div>
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <i class="fa-solid fa-receipt text-blue-600"></i> Supplier Delivery Logs & Restore Trash
+                </h2>
+                <p class="text-xs text-slate-500">Revert mistaken delivery entries or restore deleted records.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="filterLogs('ACTIVE')" id="btn-log-active" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold">Active Logs</button>
+                <button onclick="filterLogs('DELETED')" id="btn-log-deleted" class="bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-semibold">Deleted Trash</button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th class="p-2.5">Log ID / Timestamp</th>
+                    <th class="p-2.5">Supplier</th>
+                    <th class="p-2.5">Plan Number</th>
+                    <th class="p-2.5">Component</th>
+                    <th class="p-2.5">Target Type</th>
+                    <th class="p-2.5 text-right">Total Pairs Added</th>
+                    <th class="p-2.5">Size Breakdown</th>
+                    <th class="p-2.5 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="deliveryLogsTableBody" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- 2. SUPPLIER PORTAL VIEW (SML, MTU, FUNSOLE SUPPLIER ENTRY) -->
+    <div id="portal-supplier" class="max-w-7xl mx-auto px-4 py-6 space-y-6 hidden">
+      
+      <!-- Supplier Portal Header -->
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div id="supplierPortalHeaderIcon" class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-2xl border border-emerald-500/20">
+            <i class="fa-solid fa-warehouse"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 id="supplierPortalHeaderTitle" class="text-xl font-bold text-slate-800">SML Supplier Entry Portal</h2>
+              <span id="supplierBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">SML Supplier</span>
+            </div>
+            <p id="supplierPortalHeaderSubtitle" class="text-xs text-slate-500 mt-1">Submit component stock commitments and physical deliveries into warehouse collection.</p>
+          </div>
+        </div>
+
+        <button onclick="openSupplierModal(currentUser ? currentUser.supplierKey : 'SML')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-5 py-3 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+          <i class="fa-solid fa-plus-circle text-base"></i> New Component Entry Box
+        </button>
+      </div>
+
+      <!-- Quick Supplier Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Total Submitted Stock</p>
+          <h4 id="supplierKpiSubmitted" class="text-2xl font-extrabold text-slate-800 mt-1">0 pairs</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">Physical deliveries & commitments</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Pending Dock Verification</p>
+          <h4 id="supplierKpiPending" class="text-2xl font-extrabold text-amber-600 mt-1">0 batches</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">Awaiting Collecting Pt inspection</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Verified Received Stock</p>
+          <h4 id="supplierKpiCompleted" class="text-2xl font-extrabold text-emerald-600 mt-1">0 pairs</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">Collected in inventory</p>
+        </div>
+      </div>
+
+      <!-- Supplier Submission Log History -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-list-ul text-blue-600"></i> My Component Submission History
+        </h3>
 
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
             <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
               <tr>
-                <th class="p-2.5">Log ID / Timestamp</th>
-                <th class="p-2.5">Supplier</th>
-                <th class="p-2.5">Plan Number</th>
-                <th class="p-2.5">Component</th>
-                <th class="p-2.5">Target Type</th>
-                <th class="p-2.5 text-right">Total Pairs Added</th>
-                <th class="p-2.5">Size Breakdown</th>
-                <th class="p-2.5 text-center">Action</th>
+                <th class="p-3">Log ID / Date</th>
+                <th class="p-3">Plan Number</th>
+                <th class="p-3">Component</th>
+                <th class="p-3">Target Type</th>
+                <th class="p-3 text-right">Pairs</th>
+                <th class="p-3">Size Breakdown</th>
+                <th class="p-3 text-center">Dock Verification Status</th>
               </tr>
             </thead>
-            <tbody id="deliveryLogsTableBody" class="divide-y divide-slate-200"></tbody>
+            <tbody id="supplierSelfLogTableBody" class="divide-y divide-slate-200"></tbody>
           </table>
         </div>
       </div>
+
     </div>
 
-  </main>
+    <!-- 3. COLLECTING POINT PORTAL VIEW (DOCK RECEIVING & ASSEMBLY DISPATCH HUB) -->
+    <div id="portal-collecting" class="max-w-7xl mx-auto px-4 py-6 space-y-6 hidden">
+      
+      <!-- Collecting Point Header -->
+      <div class="bg-gradient-to-r from-amber-900 via-slate-900 to-slate-900 text-white rounded-3xl p-6 shadow-xl border border-amber-800/40 flex flex-wrap justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl border border-amber-500/30">
+            <i class="fa-solid fa-dolly"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-2xl font-black tracking-wide text-white">RECEIVING & ASSEMBLY DISPATCH HUB</h2>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">COLLECTING POINT & DISPATCH</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1">Verify physical supplier box deliveries AND dispatch daily assembly plans to the production line.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="openScanModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs px-5 py-3 rounded-xl font-extrabold transition flex items-center gap-2 shadow-lg shadow-amber-500/20">
+            <i class="fa-solid fa-qrcode text-base"></i> Scan Box Barcode
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs inside Collecting Point -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-2 shadow-sm flex flex-wrap gap-2">
+        <button onclick="switchCollectTab('dock')" id="collect-tab-dock" class="px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow">
+          <i class="fa-solid fa-truck-ramp-box"></i> 1. Receiving Dock Queue
+        </button>
+        <button onclick="switchCollectTab('dispatch')" id="collect-tab-dispatch" class="px-4 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition flex items-center gap-2">
+          <i class="fa-solid fa-paper-plane text-blue-600"></i> 2. Assembly Daily Planner & Dispatch Hub
+        </button>
+        <button onclick="switchCollectTab('matrix')" id="collect-tab-matrix" class="px-4 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition flex items-center gap-2">
+          <i class="fa-solid fa-cubes text-emerald-600"></i> 3. Ready Component Sets Matrix
+        </button>
+      </div>
+
+      <!-- Collecting Point Quick Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Pending Supplier Commitments</p>
+          <h4 id="collectPendingCommitCount" class="text-2xl font-extrabold text-amber-600 mt-1">0 batches</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">Ready for dock physical check</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Verified Received Stock</p>
+          <h4 id="collectVerifiedPairsTotal" class="text-2xl font-extrabold text-emerald-600 mt-1">0 pairs</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">Checked into warehouse</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Set Match Readiness</p>
+          <h4 id="collectMatchedSetsTotal" class="text-2xl font-extrabold text-blue-600 mt-1">0 sets</h4>
+          <p class="text-[10px] text-slate-500 mt-0.5">Complete UF+IF+SF pairs</p>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW A: RECEIVING QUEUE -->
+      <div id="collect-view-dock" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+          <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-clipboard-check text-amber-600"></i> Pending Supplier Deliveries Verification Queue
+          </h3>
+          <span class="text-xs text-slate-400">Click verify to inspect and convert to collected stock</span>
+        </div>
+
+        <div id="collectingQueueContainer" class="space-y-3"></div>
+      </div>
+
+      <!-- SUB-VIEW B: ASSEMBLY DAILY PLANNER & DISPATCH HUB (COLLECTING POINT AUTHORITY) -->
+      <div id="collect-view-dispatch" class="space-y-6 hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+          <div class="flex flex-wrap justify-between items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+            <div>
+              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-blue-600"></i> Assembly Daily Plan & Shift Capacity Balancer
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Select line efficiency, match available inventory, and balance planned hours against 11.1 hours shift capacity before dispatching.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-2 flex items-center gap-2">
+                <label for="collectLineEfficiency" class="text-xs font-semibold text-blue-900 whitespace-nowrap">
+                  <i class="fa-solid fa-gauge-high text-blue-600"></i> Line Efficiency:
+                </label>
+                <select id="collectLineEfficiency" onchange="onCollectEfficiencyChange()" class="bg-white border border-blue-300 text-blue-900 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="100">100% Efficiency (Full Rate)</option>
+                  <option value="75" selected>75% Efficiency (Medium Rate)</option>
+                  <option value="50">50% Efficiency (Ramp-up Rate)</option>
+                </select>
+              </div>
+
+              <button onclick="autoFillPlanMaxSets()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-xl font-semibold transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Fill Max Matchable Sets
+              </button>
+              <button onclick="clearPlannerInputs()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-2 rounded-xl font-medium transition">
+                Reset Inputs
+              </button>
+            </div>
+          </div>
+
+          <!-- Capacity Bar for Collecting Point -->
+          <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white rounded-2xl shadow-lg p-4 flex flex-wrap justify-between items-center gap-4 mb-4">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg border border-blue-400/20">
+                <i class="fa-solid fa-clock"></i>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Planned Assembly Shift Load</span>
+                <div class="flex items-baseline gap-2">
+                  <span id="collectTotalHoursText" class="text-2xl font-extrabold text-amber-400">0.0 hrs</span>
+                  <span class="text-xs text-slate-300">/ 11.1 hrs Max Shift Capacity</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 max-w-md mx-4">
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Shift Utilization</span>
+                <span id="collectShiftPercentText" class="font-bold">0.0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div id="collectCapacityProgressBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <button onclick="dispatchAssemblyDailyPlanBatch()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-6 py-3 rounded-xl font-extrabold transition flex items-center gap-2 shadow-lg shadow-blue-600/30">
+              <i class="fa-solid fa-paper-plane text-base"></i> DISPATCH DAILY ASSEMBLY PLAN
+            </button>
+          </div>
+
+          <!-- Table matrix -->
+          <div class="overflow-x-auto max-h-[500px]">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-800 text-slate-200 sticky top-0 z-20 shadow-sm">
+                <tr>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-28">Plan Number</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-20">Item Code</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-16">Type</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-24">Hourly Rate</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-24">Matchable Sets</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold text-center" colspan="13">Size Assortment Target & Input Quantities (Sizes 01 to 13)</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-24 text-right">Planned Pairs</th>
+                  <th class="p-3 border-b border-slate-700 font-semibold w-24 text-right">Est. Hours</th>
+                </tr>
+              </thead>
+              <tbody id="collectPlannerTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW C: Collecting Point Complete Sets Matrix -->
+      <div id="collect-view-matrix" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 hidden">
+        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-cubes text-emerald-600"></i> Complete Component Readiness & Matching Matrix
+        </h3>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Plan Number</th>
+                <th class="p-3">Item Code</th>
+                <th class="p-3 text-center">Upper (UF)</th>
+                <th class="p-3 text-center">Insole (IF)</th>
+                <th class="p-3 text-center">Sole (SF)</th>
+                <th class="p-3 text-center font-bold text-emerald-700">Matched Pairs</th>
+                <th class="p-3 text-center">Target Order</th>
+                <th class="p-3 text-center">Readiness %</th>
+              </tr>
+            </thead>
+            <tbody id="collectingMatrixTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 
   <!-- SUPPLIER ENTRY MODAL -->
   <div id="supplierModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full mx-4 overflow-hidden border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full mx-4 overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-150">
       
       <div id="supplierModalHeader" class="p-4 text-white flex justify-between items-center bg-blue-600">
         <h3 id="supplierModalTitle" class="font-bold text-base flex items-center gap-2">
@@ -387,40 +772,40 @@
         <button onclick="closeSupplierModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div class="p-6 space-y-6 max-h-[85vh] overflow-y-auto">
+      <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label id="lblPlanSelect" class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1.5">SELECT PLAN NUMBER</label>
-            <select id="modalPlanSelect" onchange="onModalPlanChange()" class="w-full text-xs font-semibold border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"></select>
+            <label id="lblPlanSelect" class="block text-[11px] font-bold uppercase text-slate-600 tracking-wider mb-1.5">SELECT PLAN NUMBER</label>
+            <select id="modalPlanSelect" onchange="onModalPlanChange()" class="w-full text-xs font-semibold border border-slate-300 rounded-xl p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"></select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1.5">SELECT COMPONENT PART</label>
-            <select id="modalComponentSelect" onchange="onModalPlanChange()" class="w-full text-xs font-semibold border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
+            <label class="block text-[11px] font-bold uppercase text-slate-600 tracking-wider mb-1.5">SELECT COMPONENT PART</label>
+            <select id="modalComponentSelect" onchange="onModalPlanChange()" class="w-full text-xs font-semibold border border-slate-300 rounded-xl p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
               <option value="UF">UF - Upper Finishing</option>
               <option value="IF">IF - Insole Finishing</option>
               <option value="SF">SF - Sole Finishing</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1.5">ENTRY TARGET TYPE</label>
-            <select id="modalEntryTypeSelect" class="w-full text-xs font-semibold border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
-              <option value="COLLECTED">Physical Delivery Received (+ Collected)</option>
-              <option value="COMMITTED">Supplier Delivery Commitment (+ Committed)</option>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 tracking-wider mb-1.5">ENTRY TARGET TYPE</label>
+            <select id="modalEntryTypeSelect" class="w-full text-xs font-semibold border border-slate-300 rounded-xl p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
+              <option value="COLLECTED">Physical Delivery Received (+ Collected Stock)</option>
+              <option value="COMMITTED">Supplier Delivery Commitment (+ Committed Stock)</option>
             </select>
           </div>
         </div>
 
-        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 shadow-sm space-y-3">
+        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 shadow-sm space-y-3">
           <div class="flex flex-wrap justify-between items-center gap-2">
-            <h4 class="text-xs font-bold uppercase text-slate-700 tracking-wider">INCREMENTAL SIZE INPUTS (1 TO 13)</h4>
+            <h4 class="text-xs font-bold uppercase text-slate-700 tracking-wider">INCREMENTAL SIZE INPUTS (SIZES 01 TO 13 - MULTIPLES OF 10)</h4>
             <div class="flex items-center gap-2">
-              <button onclick="addRemainingTargetToModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Add Remaining Target</button>
-              <button onclick="clearModalSizeInputs()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Clear Inputs</button>
+              <button onclick="addRemainingTargetToModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-semibold transition">Add Remaining Target</button>
+              <button onclick="clearModalSizeInputs()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-semibold transition">Clear Inputs</button>
             </div>
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse bg-white rounded-lg overflow-hidden border border-blue-100">
+            <table class="w-full text-left text-xs border-collapse bg-white rounded-xl overflow-hidden border border-blue-100">
               <thead>
                 <tr class="bg-blue-50/80 text-blue-900 border-b border-blue-100 font-bold">
                   <th class="p-2.5 w-28 text-center border-r border-blue-100">Metric</th>
@@ -512,8 +897,8 @@
       </div>
 
       <div class="bg-slate-100 px-6 py-3.5 flex justify-end gap-3 border-t border-slate-200">
-        <button onclick="closeSupplierModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition">Cancel</button>
-        <button onclick="saveSupplierDeliveryEntry()" class="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition flex items-center gap-1.5">
+        <button onclick="closeSupplierModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition">Cancel</button>
+        <button onclick="saveSupplierDeliveryEntry()" class="px-5 py-2 text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow transition flex items-center gap-1.5">
           <i class="fa-solid fa-plus-circle"></i> Save Stock Entry
         </button>
       </div>
@@ -521,7 +906,52 @@
     </div>
   </div>
 
-  <!-- PASSWORD CLEAR DATA MODAL -->
+  <!-- CREDENTIALS MANAGEMENT MODAL -->
+  <div id="credentialsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-150">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-sm flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-400"></i> USER LOGINS & CREDENTIAL MANAGEMENT
+        </h3>
+        <button onclick="closeCredentialsModal()" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <p class="text-xs text-slate-500">Update passwords for system logins (Management, SML, MTU, Funsole, Collecting Point).</p>
+        
+        <div id="credentialsListContainer" class="space-y-3 divide-y divide-slate-100"></div>
+      </div>
+
+      <div class="bg-slate-100 p-4 flex justify-between items-center border-t border-slate-200">
+        <button onclick="resetAllCredentialsToDefault()" class="text-xs font-bold text-red-600 hover:underline">Reset to Initial Defaults</button>
+        <button onclick="closeCredentialsModal()" class="px-5 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-xl">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARCODE SCANNER SIMULATION MODAL -->
+  <div id="scanModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 p-6 border border-slate-200 text-center space-y-4 animate-in fade-in zoom-in duration-150">
+      <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-3xl">
+        <i class="fa-solid fa-barcode"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-extrabold text-slate-800">Dock Barcode Scan Simulation</h3>
+        <p class="text-xs text-slate-500 mt-1">Select or enter a supplier delivery batch ID to quickly receive.</p>
+      </div>
+
+      <select id="simScanSelect" class="w-full text-xs font-semibold border border-slate-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-amber-500"></select>
+
+      <div class="flex gap-2">
+        <button onclick="closeScanModal()" class="flex-1 py-2.5 text-xs font-semibold bg-slate-100 text-slate-600 rounded-xl">Cancel</button>
+        <button onclick="executeSimulatedScanReceive()" class="flex-1 py-2.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl shadow">
+          Verify Batch
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLEAR DATA PASSWORD MODAL -->
   <div id="clearDataModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 border border-slate-200">
       <div class="text-center space-y-3">
@@ -529,22 +959,24 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <h3 class="text-lg font-bold text-slate-800">Clear Operational Data</h3>
-        <p class="text-xs text-slate-500">This will wipe all ready inventory, commitments, logs, and dispatched plans. Master plan targets will remain intact.</p>
+        <p class="text-xs text-slate-500">This will wipe all inventory, commitments, logs, and dispatches. Master plan targets remain intact.</p>
         <div>
-          <input type="password" id="clearPasswordInput" placeholder="Enter password" class="w-full text-center border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none">
+          <input type="password" id="clearPasswordInput" placeholder="Enter admin password (Admin123 or Chama123)" class="w-full text-center border border-slate-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-red-500 outline-none">
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-6">
-        <button onclick="closeClearDataModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-        <button onclick="executePasswordClearData()" class="px-4 py-2 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-lg shadow">
+        <button onclick="closeClearDataModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl">Cancel</button>
+        <button onclick="executePasswordClearData()" class="px-4 py-2 text-xs font-bold bg-red-600 text-white rounded-xl shadow">
           Clear Data
         </button>
       </div>
     </div>
   </div>
 
-  <!-- APPLICATION LOGIC -->
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
   <script>
+    // System Constants
+    const SHIFT_HOURS = 11.1;
     const HOURLY_RATES = {
       'F1':  { 100: 300, 75: 225, 50: 150 },
       'F2':  { 100: 250, 75: 188, 50: 125 },
@@ -552,8 +984,16 @@
       'EVA': { 100: 300, 75: 225, 50: 150 }
     };
 
-    const SHIFT_HOURS = 11.1;
+    // Default System Users
+    const DEFAULT_USERS = {
+      'management': { username: 'management', password: 'Admin123', name: 'Executive Management', role: 'Management', icon: 'fa-user-shield', color: 'blue' },
+      'sml':        { username: 'sml',        password: 'SML123',   name: 'SML Supplier Team', role: 'Supplier',    supplierKey: 'SML', icon: 'fa-warehouse', color: 'emerald' },
+      'mtu':        { username: 'mtu',        password: 'MTU123',   name: 'MTU Supplier Team', role: 'Supplier',    supplierKey: 'MTU', icon: 'fa-industry', color: 'sky' },
+      'funsole':    { username: 'funsole',    password: 'Funsole123', name: 'Funsole Supplier Team', role: 'Supplier', supplierKey: 'Funsole', icon: 'fa-shoe-prints', color: 'purple' },
+      'collecting': { username: 'collecting', password: 'Collect123', name: 'Collecting Point Dock', role: 'CollectingPoint', icon: 'fa-dolly', color: 'amber' }
+    };
 
+    // 60 Master Order Plans
     const MASTER_DATASET = [
       { planNum: "26-11-111GG", itemCode: "GC-0438", month: "NOV", cat: 3, type: "F2", deliQty: 1000, target: [160,160,150,190,100,0,0,0,0,0,0,130,110] },
       { planNum: "26-11-112GG", itemCode: "GC-0438", month: "NOV", cat: 3, type: "F2", deliQty: 1040, target: [160,160,150,190,100,0,0,0,0,0,0,130,150] },
@@ -617,20 +1057,40 @@
       { planNum: "26-09-242GG", itemCode: "GC-0430", month: "SEP", cat: 3, type: "F1", deliQty: 1000, target: [0,0,0,0,0,100,100,210,210,190,190,0,0] }
     ];
 
+    // Global State Variables
+    let currentUser = null;
+    let usersConfig = {};
     let inventoryState = {};
     let commitmentState = {};
     let plannerInputs = {};
     let dispatchedPlans = [];
     let deliveryLogs = [];
     let logFilterMode = 'ACTIVE';
+    let currentSupplierModal = 'SML';
+    let pendingConfirmCallback = null;
 
+    // Window Init
     window.onload = function() {
+      initUsersConfig();
       initInventoryState();
       loadFromLocalStorage();
       updateClock();
       setInterval(updateClock, 1000);
-      renderAll();
+      renderAppView();
     };
+
+    function initUsersConfig() {
+      const saved = localStorage.getItem('sml_users_config');
+      if (saved) {
+        try { usersConfig = JSON.parse(saved); } catch(e) { usersConfig = { ...DEFAULT_USERS }; }
+      } else {
+        usersConfig = { ...DEFAULT_USERS };
+      }
+    }
+
+    function saveUsersConfig() {
+      localStorage.setItem('sml_users_config', JSON.stringify(usersConfig));
+    }
 
     function initInventoryState() {
       MASTER_DATASET.forEach(item => {
@@ -641,7 +1101,8 @@
     }
 
     function updateClock() {
-      document.getElementById('liveTimeClock').innerText = new Date().toLocaleString();
+      const clockEl = document.getElementById('liveTimeClock');
+      if (clockEl) clockEl.innerText = new Date().toLocaleString();
     }
 
     function saveToLocalStorage() {
@@ -656,19 +1117,357 @@
       const com = localStorage.getItem('sml_commitment_state');
       const disp = localStorage.getItem('sml_dispatched_plans');
       const logs = localStorage.getItem('sml_delivery_logs');
+      const user = localStorage.getItem('sml_current_user');
+
       if (inv) inventoryState = JSON.parse(inv);
       if (com) commitmentState = JSON.parse(com);
       if (disp) dispatchedPlans = JSON.parse(disp);
       if (logs) deliveryLogs = JSON.parse(logs);
+      if (user) currentUser = JSON.parse(user);
     }
 
-    function renderAll() {
+    // Toast Notifications
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-red-600 text-white',
+        info: 'bg-slate-800 text-white',
+        warning: 'bg-amber-600 text-white'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-xmark',
+        info: 'fa-circle-info',
+        warning: 'fa-triangle-exclamation'
+      };
+
+      toast.className = `${bgColors[type] || bgColors.info} px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-3 text-xs font-semibold transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto border border-white/10`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fa-solid ${icons[type] || icons.info}"></i>
+          <span>${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Modal Confirmations
+    function showConfirmModal(title, message, onConfirm) {
+      document.getElementById('confirmModalTitle').innerText = title;
+      document.getElementById('confirmModalMessage').innerText = message;
+      pendingConfirmCallback = onConfirm;
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.add('hidden');
+      pendingConfirmCallback = null;
+    });
+
+    document.getElementById('confirmActionBtn').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.add('hidden');
+      if (pendingConfirmCallback) {
+        pendingConfirmCallback();
+        pendingConfirmCallback = null;
+      }
+    });
+
+    // Authentication Handlers
+    function quickLogin(roleKey) {
+      if (!usersConfig[roleKey]) {
+        showToast("Invalid role account key", "error");
+        return;
+      }
+      currentUser = usersConfig[roleKey];
+      localStorage.setItem('sml_current_user', JSON.stringify(currentUser));
+      showToast(`Signed in as ${currentUser.name}`, "success");
+      renderAppView();
+    }
+
+    function handleLoginFormSubmit(event) {
+      event.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+      const p = document.getElementById('loginPassword').value.trim();
+
+      let matched = null;
+      Object.values(usersConfig).forEach(usr => {
+        if (usr.username.toLowerCase() === u && usr.password === p) {
+          matched = usr;
+        }
+      });
+
+      if (matched) {
+        currentUser = matched;
+        localStorage.setItem('sml_current_user', JSON.stringify(currentUser));
+        showToast(`Welcome back, ${currentUser.name}!`, "success");
+        renderAppView();
+      } else {
+        showToast("Invalid username or password!", "error");
+      }
+    }
+
+    function logoutUser() {
+      showConfirmModal("Confirm Logout", "Are you sure you want to sign out of the portal?", () => {
+        currentUser = null;
+        localStorage.removeItem('sml_current_user');
+        showToast("Logged out successfully", "info");
+        renderAppView();
+      });
+    }
+
+    // Application View Switcher
+    function renderAppView() {
+      const authView = document.getElementById('authView');
+      const appView = document.getElementById('authenticatedApp');
+      const headerNav = document.getElementById('headerUserNav');
+      const metricsBanner = document.getElementById('systemMetricsBanner');
+
+      if (!currentUser) {
+        authView.classList.remove('hidden');
+        appView.classList.add('hidden');
+        headerNav.classList.add('hidden');
+        headerNav.classList.remove('flex');
+        metricsBanner.classList.add('hidden');
+        return;
+      }
+
+      authView.classList.add('hidden');
+      appView.classList.remove('hidden');
+      headerNav.classList.remove('hidden');
+      headerNav.classList.add('flex');
+      metricsBanner.classList.remove('hidden');
+
+      // Update Header Info
+      document.getElementById('hdrUserName').innerText = currentUser.name;
+      document.getElementById('hdrUserRole').innerText = currentUser.role;
+
+      const badge = document.getElementById('roleHeaderBadge');
+      badge.classList.remove('hidden');
+      badge.innerText = currentUser.role === 'Management' ? 'Management Monitor' : (currentUser.role === 'CollectingPoint' ? 'Collecting Pt. Dispatcher' : currentUser.role);
+
+      const btnCreds = document.getElementById('btnManageCreds');
+      if (currentUser.role === 'Management') btnCreds.classList.remove('hidden');
+      else btnCreds.classList.add('hidden');
+
+      // Hide all role portals
+      document.getElementById('portal-management').classList.add('hidden');
+      document.getElementById('portal-supplier').classList.add('hidden');
+      document.getElementById('portal-collecting').classList.add('hidden');
+
+      // Activate corresponding portal based on role
+      if (currentUser.role === 'Management') {
+        document.getElementById('portal-management').classList.remove('hidden');
+        renderManagementPortal();
+      } else if (currentUser.role === 'Supplier') {
+        document.getElementById('portal-supplier').classList.remove('hidden');
+        renderSupplierPortal();
+      } else if (currentUser.role === 'CollectingPoint') {
+        document.getElementById('portal-collecting').classList.remove('hidden');
+        renderCollectingPointPortal();
+      }
+    }
+
+    // Portal Renders
+    function renderManagementPortal() {
       updateKPIs();
       renderPlannerMatrix();
       renderSupplierMonitor();
       renderMasterPlan();
       renderDispatchedHistory();
       renderDeliveryLogs();
+    }
+
+    function renderSupplierPortal() {
+      const suppKey = currentUser.supplierKey || 'SML';
+      document.getElementById('supplierPortalHeaderTitle').innerText = `${suppKey} Supplier Entry Portal`;
+      document.getElementById('supplierBadge').innerText = `${suppKey} Supplier`;
+
+      // Filter logs for this supplier
+      const logs = deliveryLogs.filter(l => l.supplier === suppKey && l.status === 'ACTIVE');
+      const submittedTotal = logs.reduce((sum, l) => sum + l.totalPairs, 0);
+      const pendingCount = logs.filter(l => l.targetType === 'COMMITTED').length;
+      const verifiedTotal = logs.filter(l => l.targetType === 'COLLECTED').reduce((sum, l) => sum + l.totalPairs, 0);
+
+      document.getElementById('supplierKpiSubmitted').innerText = submittedTotal.toLocaleString() + " pairs";
+      document.getElementById('supplierKpiPending').innerText = pendingCount + " batches";
+      document.getElementById('supplierKpiCompleted').innerText = verifiedTotal.toLocaleString() + " pairs";
+
+      // Self logs table
+      const tbody = document.getElementById('supplierSelfLogTableBody');
+      tbody.innerHTML = '';
+
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No submissions recorded for ${suppKey} yet.</td></tr>`;
+        return;
+      }
+
+      logs.forEach(log => {
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-200";
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-slate-800">${log.id}<br><span class="text-[10px] text-slate-400 font-normal">${log.timestamp}</span></td>
+          <td class="p-3 font-bold text-slate-700">${log.planNum}</td>
+          <td class="p-3 font-semibold text-blue-700">${log.component}</td>
+          <td class="p-3"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${log.targetType === 'COLLECTED' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${log.targetType}</span></td>
+          <td class="p-3 text-right font-extrabold text-slate-800">${log.totalPairs}</td>
+          <td class="p-3 font-mono text-[11px] text-slate-600">${log.sizes.map((s, idx) => s > 0 ? `Sz${idx+1}:${s}` : null).filter(Boolean).join(' | ')}</td>
+          <td class="p-3 text-center">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${log.dockStatus === 'VERIFIED' || log.targetType === 'COLLECTED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+              ${log.dockStatus === 'VERIFIED' || log.targetType === 'COLLECTED' ? '<i class="fa-solid fa-check"></i> Verified Received' : '<i class="fa-solid fa-clock"></i> Dock Queue'}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderCollectingPointPortal() {
+      // Stats
+      const pendingLogs = deliveryLogs.filter(l => l.targetType === 'COMMITTED' && l.dockStatus !== 'VERIFIED' && l.status === 'ACTIVE');
+      document.getElementById('collectPendingCommitCount').innerText = pendingLogs.length + " batches";
+
+      let verifiedTotal = 0;
+      deliveryLogs.filter(l => l.targetType === 'COLLECTED' && l.status === 'ACTIVE').forEach(l => verifiedTotal += l.totalPairs);
+      document.getElementById('collectVerifiedPairsTotal').innerText = verifiedTotal.toLocaleString() + " pairs";
+
+      let readySets = 0;
+      MASTER_DATASET.forEach(item => {
+        const inv = inventoryState[item.planNum];
+        for(let i=0; i<13; i++) readySets += Math.min(inv.UF[i], inv.IF[i], inv.SF[i]);
+      });
+      document.getElementById('collectMatchedSetsTotal').innerText = readySets.toLocaleString() + " sets";
+
+      // Dock Queue
+      const queueContainer = document.getElementById('collectingQueueContainer');
+      queueContainer.innerHTML = '';
+
+      if (pendingLogs.length === 0) {
+        queueContainer.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">No pending supplier deliveries awaiting dock verification.</div>`;
+      } else {
+        pendingLogs.forEach(log => {
+          let card = document.createElement('div');
+          card.className = "bg-amber-50/50 border border-amber-200 rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 shadow-sm";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-amber-900">${log.id}</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">${log.supplier}</span>
+                <span class="text-[10px] text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${log.timestamp}</span>
+              </div>
+              <div class="text-xs font-bold text-slate-800 mt-1">Plan ${log.planNum} • Component ${log.component} • Total ${log.totalPairs} pairs</div>
+              <div class="text-[11px] font-mono text-slate-600 mt-0.5">${log.sizes.map((s, idx) => s > 0 ? `Sz${idx+1}:${s}` : null).filter(Boolean).join(' | ')}</div>
+            </div>
+            <button onclick="verifyDockBatch('${log.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-circle-check"></i> Verify & Receive to Inventory
+            </button>
+          `;
+          queueContainer.appendChild(card);
+        });
+      }
+
+      renderCollectPlannerMatrix();
+
+      // Matrix table
+      const matrixBody = document.getElementById('collectingMatrixTableBody');
+      matrixBody.innerHTML = '';
+      MASTER_DATASET.forEach(item => {
+        const inv = inventoryState[item.planNum];
+        const uf = inv.UF.reduce((a,b)=>a+b,0);
+        const ifTotal = inv.IF.reduce((a,b)=>a+b,0);
+        const sf = inv.SF.reduce((a,b)=>a+b,0);
+        let matchable = 0;
+        for(let i=0; i<13; i++) matchable += Math.min(inv.UF[i], inv.IF[i], inv.SF[i]);
+
+        const pct = Math.min(100, (matchable / item.deliQty) * 100);
+
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-200";
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-slate-800">${item.planNum}</td>
+          <td class="p-3 text-slate-600">${item.itemCode}</td>
+          <td class="p-3 text-center font-semibold text-blue-700">${uf}</td>
+          <td class="p-3 text-center font-semibold text-emerald-700">${ifTotal}</td>
+          <td class="p-3 text-center font-semibold text-purple-700">${sf}</td>
+          <td class="p-3 text-center font-bold text-emerald-800 bg-emerald-50">${matchable}</td>
+          <td class="p-3 text-center font-semibold">${item.deliQty}</td>
+          <td class="p-3 text-center font-bold ${pct >= 100 ? 'text-emerald-600' : 'text-amber-600'}">${pct.toFixed(0)}%</td>
+        `;
+        matrixBody.appendChild(tr);
+      });
+    }
+
+    // Management Sub-Tab Switcher
+    function switchMgmtTab(tab) {
+      ['planner', 'supplier', 'master', 'history', 'logs'].forEach(t => {
+        const view = document.getElementById('mgmt-view-' + t);
+        const btn = document.getElementById('mgmt-tab-' + t);
+        if (view) view.classList.add('hidden');
+        if (btn) btn.classList.remove('active');
+      });
+      const activeView = document.getElementById('mgmt-view-' + tab);
+      const activeBtn = document.getElementById('mgmt-tab-' + tab);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    // Collecting Point Sub-Tab Switcher
+    function switchCollectTab(subTab) {
+      ['dock', 'dispatch', 'matrix'].forEach(t => {
+        const view = document.getElementById('collect-view-' + t);
+        const btn = document.getElementById('collect-tab-' + t);
+        if (view) view.classList.add('hidden');
+        if (btn) btn.className = "px-4 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition flex items-center gap-2";
+      });
+
+      const activeView = document.getElementById('collect-view-' + subTab);
+      const activeBtn = document.getElementById('collect-tab-' + subTab);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) activeBtn.className = "px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow";
+
+      if (subTab === 'dispatch') renderCollectPlannerMatrix();
+    }
+
+    function verifyDockBatch(logId) {
+      const log = deliveryLogs.find(l => l.id === logId);
+      if (!log) return;
+
+      showConfirmModal("Dock Receipt Verification", `Accept ${log.totalPairs} pairs of ${log.component} from ${log.supplier} into warehouse collected inventory?`, () => {
+        for(let i=0; i<13; i++) {
+          inventoryState[log.planNum][log.component][i] += log.sizes[i];
+          commitmentState[log.planNum][log.component][i] = Math.max(0, commitmentState[log.planNum][log.component][i] - log.sizes[i]);
+        }
+        log.targetType = 'COLLECTED';
+        log.dockStatus = 'VERIFIED';
+        saveToLocalStorage();
+        showToast(`Verified and added ${log.totalPairs} pairs to warehouse stock!`, "success");
+        renderCollectingPointPortal();
+      });
+    }
+
+    function getHourlyRate(type, efficiency) {
+      return HOURLY_RATES[type] ? HOURLY_RATES[type][efficiency] : 225;
+    }
+
+    function calcTotalPlannerHours() {
+      const effEl = document.getElementById('collectLineEfficiency') || document.getElementById('globalLineEfficiency');
+      const efficiency = parseInt(effEl ? effEl.value : '75');
+      let hrs = 0;
+      MASTER_DATASET.forEach(item => {
+        const pairs = (plannerInputs[item.planNum] || []).reduce((a,b)=>a+b,0);
+        if (pairs > 0) hrs += pairs / getHourlyRate(item.type, efficiency);
+      });
+      return hrs;
     }
 
     function updateKPIs() {
@@ -683,56 +1482,36 @@
       document.getElementById('kpi-dispatched-total').innerText = dispatchedPlans.reduce((s,p)=>s+p.totalPairs,0).toLocaleString() + " pairs";
     }
 
-    function getHourlyRate(type, efficiency) {
-      return HOURLY_RATES[type] ? HOURLY_RATES[type][efficiency] : 225;
-    }
-
-    function calcTotalPlannerHours() {
-      const efficiency = parseInt(document.getElementById('globalLineEfficiency').value);
-      let hrs = 0;
-      MASTER_DATASET.forEach(item => {
-        const pairs = (plannerInputs[item.planNum] || []).reduce((a,b)=>a+b,0);
-        if (pairs > 0) hrs += pairs / getHourlyRate(item.type, efficiency);
-      });
-      return hrs;
-    }
-
     function onLineEfficiencyChange() {
       renderPlannerMatrix();
       updateCapacitySummary();
       updateKPIs();
     }
 
-    function switchTab(tab) {
-      ['planner', 'supplier', 'master', 'history', 'logs'].forEach(t => {
-        document.getElementById('view-' + t).classList.add('hidden');
-        document.getElementById('tab-' + t).classList.remove('active');
-      });
-      document.getElementById('view-' + tab).classList.remove('hidden');
-      document.getElementById('tab-' + tab).classList.add('active');
+    function onCollectEfficiencyChange() {
+      const eff = document.getElementById('collectLineEfficiency').value;
+      const globalEff = document.getElementById('globalLineEfficiency');
+      if (globalEff) globalEff.value = eff;
+      renderCollectPlannerMatrix();
+      updateCapacitySummary();
     }
 
-    function renderPlannerMatrix() {
-      const tbody = document.getElementById('plannerTableBody');
-      const efficiency = parseInt(document.getElementById('globalLineEfficiency').value);
-      const search = document.getElementById('plannerSearch').value.toUpperCase();
-      const monthFilter = document.getElementById('plannerMonthFilter').value;
-      const typeFilter = document.getElementById('plannerTypeFilter').value;
-      const stockFilter = document.getElementById('plannerStockFilter').value;
+    function renderCollectPlannerMatrix() {
+      const tbody = document.getElementById('collectPlannerTableBody');
+      if (!tbody) return;
+
+      const effEl = document.getElementById('collectLineEfficiency') || document.getElementById('globalLineEfficiency');
+      const efficiency = parseInt(effEl ? effEl.value : '75');
 
       tbody.innerHTML = '';
 
       MASTER_DATASET.forEach(item => {
-        if (search && !item.planNum.includes(search) && !item.itemCode.includes(search)) return;
-        if (monthFilter !== 'ALL' && item.month !== monthFilter) return;
-        if (typeFilter !== 'ALL' && item.type !== typeFilter) return;
-
         const inv = inventoryState[item.planNum];
+        if (!inv) return;
+
         const matchable = Array(13).fill(0).map((_, i) => Math.min(inv.UF[i], inv.IF[i], inv.SF[i]));
         const totalMatchable = matchable.reduce((a,b) => a+b, 0);
 
-        if (stockFilter === 'READY' && totalMatchable === 0) return;
-        
         const rate = getHourlyRate(item.type, efficiency);
         const inputs = plannerInputs[item.planNum] || Array(13).fill(0);
         const plannedPairs = inputs.reduce((a,b) => a+b, 0);
@@ -763,8 +1542,71 @@
           <td class="p-2.5 font-semibold text-blue-700">${rate} p/h</td>
           <td class="p-2.5 font-bold text-emerald-700">${totalMatchable}</td>
           ${sizeInputsHTML}
-          <td class="p-2.5 text-right font-bold text-slate-800" id="totalPairs-${item.planNum}">${plannedPairs}</td>
-          <td class="p-2.5 text-right font-bold text-amber-600" id="estHours-${item.planNum}">${estHours.toFixed(1)}h</td>
+          <td class="p-2.5 text-right font-bold text-slate-800">${plannedPairs}</td>
+          <td class="p-2.5 text-right font-bold text-amber-600">${estHours.toFixed(1)}h</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      updateCapacitySummary();
+    }
+
+    function renderPlannerMatrix() {
+      const tbody = document.getElementById('plannerTableBody');
+      if (!tbody) return;
+
+      const efficiency = parseInt(document.getElementById('globalLineEfficiency')?.value || '75');
+      const search = (document.getElementById('plannerSearch')?.value || '').toUpperCase();
+      const monthFilter = document.getElementById('plannerMonthFilter')?.value || 'ALL';
+      const typeFilter = document.getElementById('plannerTypeFilter')?.value || 'ALL';
+      const stockFilter = document.getElementById('plannerStockFilter')?.value || 'ALL';
+
+      tbody.innerHTML = '';
+
+      MASTER_DATASET.forEach(item => {
+        if (search && !item.planNum.includes(search) && !item.itemCode.includes(search)) return;
+        if (monthFilter !== 'ALL' && item.month !== monthFilter) return;
+        if (typeFilter !== 'ALL' && item.type !== typeFilter) return;
+
+        const inv = inventoryState[item.planNum];
+        if (!inv) return;
+
+        const matchable = Array(13).fill(0).map((_, i) => Math.min(inv.UF[i], inv.IF[i], inv.SF[i]));
+        const totalMatchable = matchable.reduce((a,b) => a+b, 0);
+
+        if (stockFilter === 'READY' && totalMatchable === 0) return;
+        
+        const rate = getHourlyRate(item.type, efficiency);
+        const inputs = plannerInputs[item.planNum] || Array(13).fill(0);
+        const plannedPairs = inputs.reduce((a,b) => a+b, 0);
+        const estHours = plannedPairs > 0 ? (plannedPairs / rate) : 0;
+
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-200";
+
+        let sizeStatusHTML = '';
+        for(let i=0; i<13; i++) {
+          const maxAvail = matchable[i];
+          const val = inputs[i] || 0;
+          sizeStatusHTML += `
+            <td class="p-1 text-center border-r border-slate-100 ${item.target[i] > 0 ? 'bg-blue-50/30' : 'bg-slate-50/50'}">
+              <div class="text-[10px] text-slate-400">Sz ${i+1} (${item.target[i]})</div>
+              <div class="text-[10px] font-bold text-emerald-600">Avail: ${maxAvail}</div>
+              <div class="text-xs font-bold text-slate-700 mt-0.5">${val > 0 ? val : '-'}</div>
+            </td>
+          `;
+        }
+
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${item.planNum}</td>
+          <td class="p-2.5 font-medium text-slate-600">${item.itemCode}</td>
+          <td class="p-2.5"><span class="text-[10px] px-2 py-0.5 rounded font-bold badge-${item.type.toLowerCase()}">${item.type}</span></td>
+          <td class="p-2.5 font-semibold text-blue-700">${rate} p/h</td>
+          <td class="p-2.5 font-bold text-emerald-700">${totalMatchable}</td>
+          ${sizeStatusHTML}
+          <td class="p-2.5 text-right font-bold text-slate-800">${plannedPairs}</td>
+          <td class="p-2.5 text-right font-bold text-amber-600">${estHours.toFixed(1)}h</td>
         `;
 
         tbody.appendChild(tr);
@@ -779,86 +1621,60 @@
       if (num > 0 && num < 10) num = 10;
       num = Math.floor(num / 10) * 10;
 
+      if (!plannerInputs[planNum]) plannerInputs[planNum] = Array(13).fill(0);
       plannerInputs[planNum][sizeIdx] = num;
-      renderPlannerMatrix();
+
+      if (currentUser && currentUser.role === 'CollectingPoint') {
+        renderCollectPlannerMatrix();
+      } else {
+        renderPlannerMatrix();
+      }
       updateKPIs();
     }
 
     function updateCapacitySummary() {
-      const totalHours = calcTotalPlannerHours();
-      const pct = Math.min(100, (totalHours / SHIFT_HOURS) * 100);
-
-      document.getElementById('totalPlannerHoursText').innerText = totalHours.toFixed(1) + " hrs";
-      document.getElementById('shiftCapacityPercentText').innerText = pct.toFixed(1) + "%";
-
-      const bar = document.getElementById('capacityProgressBar');
-      bar.style.width = pct + "%";
-      bar.className = totalHours > SHIFT_HOURS ? "bg-red-500 h-full transition-all duration-300" : "bg-emerald-500 h-full transition-all duration-300";
-    }
-
-    function autoFillPlanMaxSets() {
+      const effEl = document.getElementById('collectLineEfficiency') || document.getElementById('globalLineEfficiency');
+      const efficiency = parseInt(effEl ? effEl.value : '75');
+      
+      let hrs = 0;
       MASTER_DATASET.forEach(item => {
-        const inv = inventoryState[item.planNum];
-        for(let i=0; i<13; i++) {
-          const matchable = Math.min(inv.UF[i], inv.IF[i], inv.SF[i]);
-          let packVal = Math.floor(matchable / 10) * 10;
-          if (packVal < 10) packVal = 0;
-          plannerInputs[item.planNum][i] = packVal;
-        }
-      });
-      renderPlannerMatrix();
-      updateKPIs();
-    }
-
-    function clearPlannerInputs() {
-      MASTER_DATASET.forEach(item => plannerInputs[item.planNum] = Array(13).fill(0));
-      renderPlannerMatrix();
-      updateKPIs();
-    }
-
-    function dispatchAssemblyDailyPlanBatch() {
-      const totalHours = calcTotalPlannerHours();
-      if (totalHours === 0) { alert("Please input planned quantities before dispatching!"); return; }
-
-      if (totalHours > SHIFT_HOURS && !confirm(`Warning: Planned runtime (${totalHours.toFixed(1)} hrs) exceeds 11.1 hours capacity! Proceed?`)) return;
-
-      const efficiency = parseInt(document.getElementById('globalLineEfficiency').value);
-      const dispatchId = "DISP-" + Date.now();
-      let dispatchedItems = [];
-      let grandTotal = 0;
-
-      MASTER_DATASET.forEach(item => {
-        const sizes = [...plannerInputs[item.planNum]];
-        const sum = sizes.reduce((a,b)=>a+b,0);
-        if (sum > 0) {
-          for(let i=0; i<13; i++) {
-            inventoryState[item.planNum].UF[i] = Math.max(0, inventoryState[item.planNum].UF[i] - sizes[i]);
-            inventoryState[item.planNum].IF[i] = Math.max(0, inventoryState[item.planNum].IF[i] - sizes[i]);
-            inventoryState[item.planNum].SF[i] = Math.max(0, inventoryState[item.planNum].SF[i] - sizes[i]);
-          }
-          const rate = getHourlyRate(item.type, efficiency);
-          dispatchedItems.push({ planNum: item.planNum, itemCode: item.itemCode, type: item.type, hourlyRate: rate, pairs: sum, hours: sum/rate, sizes: sizes });
-          grandTotal += sum;
-        }
+        const pairs = (plannerInputs[item.planNum] || []).reduce((a,b)=>a+b,0);
+        if (pairs > 0) hrs += pairs / getHourlyRate(item.type, efficiency);
       });
 
-      dispatchedPlans.unshift({ id: dispatchId, timestamp: new Date().toLocaleString(), efficiency: efficiency, totalPairs: grandTotal, totalHours: totalHours, items: dispatchedItems });
-      saveToLocalStorage();
-      clearPlannerInputs();
-      renderAll();
-      alert(`Dispatched ${grandTotal} pairs (${totalHours.toFixed(1)} hrs)! Inventory updated.`);
+      const pct = Math.min(100, (hrs / SHIFT_HOURS) * 100);
+
+      // Management elements
+      const mgmtHours = document.getElementById('totalPlannerHoursText');
+      if (mgmtHours) mgmtHours.innerText = hrs.toFixed(1) + " hrs";
+      const mgmtPct = document.getElementById('shiftCapacityPercentText');
+      if (mgmtPct) mgmtPct.innerText = pct.toFixed(1) + "%";
+      const mgmtBar = document.getElementById('capacityProgressBar');
+      if (mgmtBar) {
+        mgmtBar.style.width = pct + "%";
+        mgmtBar.className = hrs > SHIFT_HOURS ? "bg-red-500 h-full transition-all duration-300" : "bg-emerald-500 h-full transition-all duration-300";
+      }
+
+      // Collecting Point elements
+      const collectHours = document.getElementById('collectTotalHoursText');
+      if (collectHours) collectHours.innerText = hrs.toFixed(1) + " hrs";
+      const collectPct = document.getElementById('collectShiftPercentText');
+      if (collectPct) collectPct.innerText = pct.toFixed(1) + "%";
+      const collectBar = document.getElementById('collectCapacityProgressBar');
+      if (collectBar) {
+        collectBar.style.width = pct + "%";
+        collectBar.className = hrs > SHIFT_HOURS ? "bg-red-500 h-full transition-all duration-300" : "bg-emerald-500 h-full transition-all duration-300";
+      }
     }
 
-    let currentSupplierModal = 'MTU';
-
-    function openSupplierModal(supplier) {
-      currentSupplierModal = supplier;
-      document.getElementById('lblPlanSelect').innerText = `SELECT ${supplier} PLAN NUMBER`;
-      document.getElementById('supplierModalTitle').innerHTML = `<i class="fa-solid fa-boxes-packing"></i> ${supplier} STOCK ENTRY BOX`;
+    function openSupplierModal(supplierKey) {
+      currentSupplierModal = supplierKey || 'SML';
+      document.getElementById('lblPlanSelect').innerText = `SELECT ${currentSupplierModal} PLAN NUMBER`;
+      document.getElementById('supplierModalTitle').innerHTML = `<i class="fa-solid fa-boxes-packing"></i> ${currentSupplierModal} COMPONENT STOCK ENTRY`;
       
       const header = document.getElementById('supplierModalHeader');
-      if (supplier === 'MTU') header.className = "p-4 text-white flex justify-between items-center bg-blue-600";
-      else if (supplier === 'SML') header.className = "p-4 text-white flex justify-between items-center bg-emerald-600";
+      if (currentSupplierModal === 'MTU') header.className = "p-4 text-white flex justify-between items-center bg-blue-600";
+      else if (currentSupplierModal === 'SML') header.className = "p-4 text-white flex justify-between items-center bg-emerald-600";
       else header.className = "p-4 text-white flex justify-between items-center bg-purple-600";
 
       const select = document.getElementById('modalPlanSelect');
@@ -924,7 +1740,7 @@
       }
 
       if (sumAdded === 0) {
-        alert("Please enter stock quantities before saving!");
+        showToast("Please enter quantity inputs before saving!", "warning");
         return;
       }
 
@@ -948,13 +1764,111 @@
         targetType: targetType,
         totalPairs: sumAdded,
         sizes: added,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        dockStatus: targetType === 'COLLECTED' ? 'VERIFIED' : 'PENDING'
       });
 
       saveToLocalStorage();
       closeSupplierModal();
-      renderAll();
-      alert(`Saved ${sumAdded} pairs of ${comp} as ${targetType}!`);
+      showToast(`Saved ${sumAdded} pairs of ${comp} as ${targetType}!`, "success");
+      renderAppView();
+    }
+
+    function openCredentialsModal() {
+      const container = document.getElementById('credentialsListContainer');
+      container.innerHTML = '';
+
+      Object.entries(usersConfig).forEach(([key, user]) => {
+        let card = document.createElement('div');
+        card.className = "pt-3 flex flex-wrap justify-between items-center gap-3";
+        card.innerHTML = `
+          <div>
+            <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid ${user.icon} text-blue-600"></i> ${user.name}
+            </div>
+            <div class="text-[10px] text-slate-400 font-mono">Username: ${user.username}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="pwd-${key}" value="${user.password}" class="w-28 text-xs font-bold font-mono border border-slate-300 rounded-lg p-1.5 outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="updateCredentials('${key}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-3 py-1.5 rounded-lg font-bold">Update</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('credentialsModal').classList.remove('hidden');
+    }
+
+    function closeCredentialsModal() {
+      document.getElementById('credentialsModal').classList.add('hidden');
+    }
+
+    function updateCredentials(key) {
+      const newPwd = document.getElementById(`pwd-${key}`).value.trim();
+      if (!newPwd) { showToast("Password cannot be empty!", "warning"); return; }
+      usersConfig[key].password = newPwd;
+      saveUsersConfig();
+      showToast(`Updated password for ${usersConfig[key].name}!`, "success");
+    }
+
+    function resetAllCredentialsToDefault() {
+      showConfirmModal("Reset Credentials", "Reset all portal user passwords back to factory defaults?", () => {
+        usersConfig = { ...DEFAULT_USERS };
+        saveUsersConfig();
+        closeCredentialsModal();
+        showToast("Passwords reset to default values!", "info");
+      });
+    }
+
+    function openScanModal() {
+      const pendingLogs = deliveryLogs.filter(l => l.targetType === 'COMMITTED' && l.dockStatus !== 'VERIFIED' && l.status === 'ACTIVE');
+      const select = document.getElementById('simScanSelect');
+      select.innerHTML = '';
+
+      if (pendingLogs.length === 0) {
+        select.innerHTML = `<option value="">No pending delivery batches found</option>`;
+      } else {
+        pendingLogs.forEach(l => {
+          select.innerHTML += `<option value="${l.id}">${l.id} - ${l.supplier} (${l.planNum} ${l.component} - ${l.totalPairs} pairs)</option>`;
+        });
+      }
+
+      document.getElementById('scanModal').classList.remove('hidden');
+    }
+
+    function closeScanModal() {
+      document.getElementById('scanModal').classList.add('hidden');
+    }
+
+    function executeSimulatedScanReceive() {
+      const logId = document.getElementById('simScanSelect').value;
+      if (!logId) { showToast("Select a batch to verify!", "warning"); return; }
+      closeScanModal();
+      verifyDockBatch(logId);
+    }
+
+    function openClearDataModal() {
+      document.getElementById('clearPasswordInput').value = '';
+      document.getElementById('clearDataModal').classList.remove('hidden');
+    }
+
+    function closeClearDataModal() {
+      document.getElementById('clearDataModal').classList.add('hidden');
+    }
+
+    function executePasswordClearData() {
+      const pwd = document.getElementById('clearPasswordInput').value.trim();
+      if (pwd !== 'Admin123' && pwd !== 'Chama123') {
+        showToast("Incorrect clear password!", "error");
+        return;
+      }
+      initInventoryState();
+      dispatchedPlans = [];
+      deliveryLogs = [];
+      saveToLocalStorage();
+      closeClearDataModal();
+      showToast("Operational stock and logs wiped successfully! Target orders retained.", "info");
+      renderAppView();
     }
 
     function renderSupplierMonitor() {
@@ -981,7 +1895,7 @@
           <td class="p-2.5 text-center font-semibold text-purple-700">${sf}</td>
           <td class="p-2.5 text-center font-bold text-emerald-800 bg-emerald-50">${matchable}</td>
           <td class="p-2.5 text-center font-semibold">${item.deliQty}</td>
-          <td class="p-2.5 font-medium ${matchable < item.deliQty ? 'text-amber-600 font-bold' : 'text-slate-400'}">${matchable < item.deliQty ? 'Pending' : 'Complete'}</td>
+          <td class="p-2.5 font-medium ${matchable < item.deliQty ? 'text-amber-600 font-bold' : 'text-slate-400'}">${matchable < item.deliQty ? 'Incomplete' : 'Complete'}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -1010,7 +1924,8 @@
 
     function renderDispatchedHistory() {
       const container = document.getElementById('historyPlanCardsContainer');
-      const search = document.getElementById('historySearch').value.toUpperCase();
+      const searchInput = document.getElementById('historySearch');
+      const search = searchInput ? searchInput.value.toUpperCase() : '';
       container.innerHTML = '';
 
       if (dispatchedPlans.length === 0) {
@@ -1044,7 +1959,7 @@
             <div class="flex items-center gap-2">
               <span class="font-bold text-emerald-700 text-sm">${plan.totalPairs} pairs</span>
               <span class="font-bold text-amber-600 text-sm">(${plan.totalHours.toFixed(1)} hrs)</span>
-              <button onclick="downloadPlanCSV('${plan.id}')" class="bg-blue-600 text-white text-[11px] px-2.5 py-1 rounded font-medium ml-2">CSV</button>
+              <button onclick="downloadPlanCSV('${plan.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-2.5 py-1 rounded-lg font-medium ml-2 shadow">CSV</button>
             </div>
           </div>
           <table class="w-full text-left">
@@ -1072,7 +1987,7 @@
     }
 
     function exportAllHistoryCSV() {
-      if (dispatchedPlans.length === 0) return alert("No history to export!");
+      if (dispatchedPlans.length === 0) { showToast("No history to export!", "warning"); return; }
       let csv = `Dispatch ID,Timestamp,Line Efficiency,Plan Number,Item Code,Type,Hourly Rate,Pairs,Hours,Sizes\n`;
       dispatchedPlans.forEach(plan => {
         plan.items.forEach(it => {
@@ -1080,13 +1995,13 @@
         });
       });
       const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `SML_History_${Date.now()}.csv`; a.click();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `SML_Dispatched_History_${Date.now()}.csv`; a.click();
     }
 
     function filterLogs(mode) {
       logFilterMode = mode;
-      document.getElementById('btn-log-active').className = mode === 'ACTIVE' ? 'bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-medium' : 'bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded font-medium';
-      document.getElementById('btn-log-deleted').className = mode === 'DELETED' ? 'bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-medium' : 'bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded font-medium';
+      document.getElementById('btn-log-active').className = mode === 'ACTIVE' ? 'bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold' : 'bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-semibold';
+      document.getElementById('btn-log-deleted').className = mode === 'DELETED' ? 'bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold' : 'bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-semibold';
       renderDeliveryLogs();
     }
 
@@ -1102,8 +2017,8 @@
 
       filtered.forEach(log => {
         let actionBtn = log.status === 'ACTIVE' 
-          ? `<button onclick="deleteLogEntry('${log.id}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded font-semibold"><i class="fa-solid fa-trash mr-1"></i> Revert</button>`
-          : `<button onclick="restoreLogEntry('${log.id}')" class="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded font-semibold"><i class="fa-solid fa-rotate-left mr-1"></i> Restore</button>`;
+          ? `<button onclick="deleteLogEntry('${log.id}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded-lg font-semibold shadow"><i class="fa-solid fa-trash mr-1"></i> Revert</button>`
+          : `<button onclick="restoreLogEntry('${log.id}')" class="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded-lg font-semibold shadow"><i class="fa-solid fa-rotate-left mr-1"></i> Restore</button>`;
 
         let tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 border-b border-slate-200";
@@ -1123,35 +2038,42 @@
 
     function deleteLogEntry(logId) {
       const log = deliveryLogs.find(l => l.id === logId);
-      if (!log || !confirm(`Revert delivery log ${logId}?`)) return;
+      if (!log) return;
 
-      if (log.targetType === 'COLLECTED') {
-        for(let i=0; i<13; i++) inventoryState[log.planNum][log.component][i] = Math.max(0, inventoryState[log.planNum][log.component][i] - log.sizes[i]);
-      } else {
-        for(let i=0; i<13; i++) commitmentState[log.planNum][log.component][i] = Math.max(0, commitmentState[log.planNum][log.component][i] - log.sizes[i]);
-      }
-      log.status = 'DELETED';
-      saveToLocalStorage();
-      renderAll();
+      showConfirmModal("Revert Delivery Entry", `Revert and subtract delivery entry ${logId}?`, () => {
+        if (log.targetType === 'COLLECTED') {
+          for(let i=0; i<13; i++) inventoryState[log.planNum][log.component][i] = Math.max(0, inventoryState[log.planNum][log.component][i] - log.sizes[i]);
+        } else {
+          for(let i=0; i<13; i++) commitmentState[log.planNum][log.component][i] = Math.max(0, commitmentState[log.planNum][log.component][i] - log.sizes[i]);
+        }
+        log.status = 'DELETED';
+        saveToLocalStorage();
+        renderAppView();
+        showToast(`Reverted delivery log ${logId}`, "info");
+      });
     }
 
     function restoreLogEntry(logId) {
       const log = deliveryLogs.find(l => l.id === logId);
-      if (!log || !confirm(`Restore log ${logId}?`)) return;
+      if (!log) return;
 
-      if (log.targetType === 'COLLECTED') {
-        for(let i=0; i<13; i++) inventoryState[log.planNum][log.component][i] += log.sizes[i];
-      } else {
-        for(let i=0; i<13; i++) commitmentState[log.planNum][log.component][i] += log.sizes[i];
-      }
-      log.status = 'ACTIVE';
-      saveToLocalStorage();
-      renderAll();
+      showConfirmModal("Restore Delivery Entry", `Restore delivery log ${logId}?`, () => {
+        if (log.targetType === 'COLLECTED') {
+          for(let i=0; i<13; i++) inventoryState[log.planNum][log.component][i] += log.sizes[i];
+        } else {
+          for(let i=0; i<13; i++) commitmentState[log.planNum][log.component][i] += log.sizes[i];
+        }
+        log.status = 'ACTIVE';
+        saveToLocalStorage();
+        renderAppView();
+        showToast(`Restored delivery log ${logId}`, "success");
+      });
     }
 
     function exportBackupJSON() {
-      const blob = new Blob([JSON.stringify({ timestamp: new Date().toISOString(), inventoryState, commitmentState, dispatchedPlans, deliveryLogs }, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify({ timestamp: new Date().toISOString(), inventoryState, commitmentState, dispatchedPlans, deliveryLogs, usersConfig }, null, 2)], { type: 'application/json' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `SML_Backup_${Date.now()}.json`; a.click();
+      showToast("Downloaded JSON backup file", "success");
     }
 
     function restoreBackupJSON(event) {
@@ -1166,33 +2088,15 @@
             commitmentState = data.commitmentState || commitmentState;
             dispatchedPlans = data.dispatchedPlans;
             deliveryLogs = data.deliveryLogs || [];
+            if (data.usersConfig) usersConfig = data.usersConfig;
             saveToLocalStorage();
-            renderAll();
-            alert("Backup restored!");
+            saveUsersConfig();
+            renderAppView();
+            showToast("System backup restored successfully!", "success");
           }
-        } catch(err) { alert("Invalid JSON backup file!"); }
+        } catch(err) { showToast("Invalid JSON backup file!", "error"); }
       };
       reader.readAsText(file);
-    }
-
-    function openClearDataModal() {
-      document.getElementById('clearPasswordInput').value = '';
-      document.getElementById('clearDataModal').classList.remove('hidden');
-    }
-
-    function closeClearDataModal() {
-      document.getElementById('clearDataModal').classList.add('hidden');
-    }
-
-    function executePasswordClearData() {
-      if (document.getElementById('clearPasswordInput').value !== 'Chama123') { alert("Incorrect password!"); return; }
-      initInventoryState();
-      dispatchedPlans = [];
-      deliveryLogs = [];
-      saveToLocalStorage();
-      closeClearDataModal();
-      renderAll();
-      alert("Operational stock and logs wiped successfully! Order targets retained.");
     }
   </script>
 </body>

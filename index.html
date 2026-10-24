@@ -21,6 +21,41 @@
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
+
+  <!-- FIREBASE 11.6.1 MODULE INITIALIZATION -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      apiKey: "AIzaSyD2SO7y6gFroog44pkxOSwD02P05k7IlM4",
+      authDomain: "sml-assembly-readiness.firebaseapp.com",
+      projectId: "sml-assembly-readiness",
+      storageBucket: "sml-assembly-readiness.firebasestorage.app",
+      messagingSenderId: "297798373003",
+      appId: "1:297798373003:web:f2145b438b7324bf110e8e",
+      measurementId: "G-3XM9RYDP1W"
+    };
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'sml-assembly-readiness';
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Bind to window object for global application sync
+    window.db = db;
+    window.auth = auth;
+    window.appId = appId;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.deleteDoc = deleteDoc;
+    window.collection = collection;
+    window.onSnapshot = onSnapshot;
+    window.signInAnonymously = signInAnonymously;
+    window.signInWithCustomToken = signInWithCustomToken;
+  </script>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
 
@@ -88,6 +123,9 @@
         <span><i class="fa-regular fa-clock text-blue-400 mr-1.5"></i> Shift Capacity: <strong class="text-white">11.1 Hours / Day</strong></span>
         <span><i class="fa-solid fa-sliders text-emerald-400 mr-1.5"></i> Efficiencies: <strong class="text-white">100% | 75% | 50%</strong></span>
         <span><i class="fa-solid fa-layer-group text-amber-400 mr-1.5"></i> Entry Constraint: <strong class="text-white">Min 10 pairs & Multiples of 10</strong></span>
+        <span id="dbStatusBadge" class="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-0.5 rounded-full border border-slate-700 font-mono text-[11px] text-amber-400">
+          <i class="fa-solid fa-spinner fa-spin"></i> Connecting DB...
+        </span>
       </div>
       <div id="liveTimeClock" class="font-mono text-slate-400 text-right"></div>
     </div>
@@ -1068,6 +1106,7 @@
     let logFilterMode = 'ACTIVE';
     let currentSupplierModal = 'SML';
     let pendingConfirmCallback = null;
+    let isDbConnected = false;
 
     // Window Init
     window.onload = function() {
@@ -1077,7 +1116,159 @@
       updateClock();
       setInterval(updateClock, 1000);
       renderAppView();
+      initFirebaseSync();
     };
+
+    // FIREBASE FIRESTORE SYNC LOGIC
+    async function initFirebaseSync() {
+      if (!window.db || !window.auth) {
+        setTimeout(initFirebaseSync, 150);
+        return;
+      }
+
+      try {
+        let userCred;
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          userCred = await window.signInWithCustomToken(window.auth, __initial_auth_token);
+        } else {
+          userCred = await window.signInAnonymously(window.auth);
+        }
+
+        const user = userCred.user;
+        if (!user) return;
+
+        isDbConnected = true;
+        updateDbStatusBadge(true);
+        setupFirestoreRealtimeListeners();
+      } catch (err) {
+        console.error("Firebase Auth Error:", err);
+        updateDbStatusBadge(false, err.message);
+      }
+    }
+
+    function updateDbStatusBadge(connected, errMsg = '') {
+      const badge = document.getElementById('dbStatusBadge');
+      if (!badge) return;
+      if (connected) {
+        badge.className = "flex items-center gap-1.5 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-700/50 font-mono text-[11px] text-emerald-400";
+        badge.innerHTML = `<i class="fa-solid fa-circle text-[8px] animate-pulse text-emerald-400"></i> Firebase Live Sync`;
+      } else {
+        badge.className = "flex items-center gap-1.5 bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-700/50 font-mono text-[11px] text-amber-400";
+        badge.innerHTML = `<i class="fa-solid fa-database text-amber-400"></i> Local Memory Mode`;
+      }
+    }
+
+    function setupFirestoreRealtimeListeners() {
+      if (!window.db || !window.auth?.currentUser) return;
+      const appId = window.appId;
+
+      // 1. Inventory Real-time Listener
+      window.onSnapshot(
+        window.doc(window.db, 'artifacts', appId, 'public', 'data', 'system', 'inventory'),
+        (docSnap) => {
+          if (docSnap.exists() && docSnap.data()?.data) {
+            inventoryState = docSnap.data().data;
+            localStorage.setItem('sml_inventory_state', JSON.stringify(inventoryState));
+            renderAppView();
+          }
+        },
+        (err) => console.error("Inventory Firestore Listener Error:", err)
+      );
+
+      // 2. Commitments Real-time Listener
+      window.onSnapshot(
+        window.doc(window.db, 'artifacts', appId, 'public', 'data', 'system', 'commitments'),
+        (docSnap) => {
+          if (docSnap.exists() && docSnap.data()?.data) {
+            commitmentState = docSnap.data().data;
+            localStorage.setItem('sml_commitment_state', JSON.stringify(commitmentState));
+            renderAppView();
+          }
+        },
+        (err) => console.error("Commitments Firestore Listener Error:", err)
+      );
+
+      // 3. User Configs Real-time Listener
+      window.onSnapshot(
+        window.doc(window.db, 'artifacts', appId, 'public', 'data', 'system', 'users_config'),
+        (docSnap) => {
+          if (docSnap.exists() && docSnap.data()?.data) {
+            usersConfig = docSnap.data().data;
+            localStorage.setItem('sml_users_config', JSON.stringify(usersConfig));
+          }
+        },
+        (err) => console.error("UsersConfig Firestore Listener Error:", err)
+      );
+
+      // 4. Delivery Logs Collection Listener
+      window.onSnapshot(
+        window.collection(window.db, 'artifacts', appId, 'public', 'data', 'delivery_logs'),
+        (colSnap) => {
+          const logs = [];
+          colSnap.forEach(d => logs.push(d.data()));
+          logs.sort((a,b) => (b.id || '').localeCompare(a.id || ''));
+          deliveryLogs = logs;
+          localStorage.setItem('sml_delivery_logs', JSON.stringify(deliveryLogs));
+          renderAppView();
+        },
+        (err) => console.error("DeliveryLogs Firestore Listener Error:", err)
+      );
+
+      // 5. Dispatched Plans Collection Listener
+      window.onSnapshot(
+        window.collection(window.db, 'artifacts', appId, 'public', 'data', 'dispatched_plans'),
+        (colSnap) => {
+          const plans = [];
+          colSnap.forEach(d => plans.push(d.data()));
+          plans.sort((a,b) => (b.id || '').localeCompare(a.id || ''));
+          dispatchedPlans = plans;
+          localStorage.setItem('sml_dispatched_plans', JSON.stringify(dispatchedPlans));
+          renderAppView();
+        },
+        (err) => console.error("DispatchedPlans Firestore Listener Error:", err)
+      );
+    }
+
+    async function syncStateToFirestore() {
+      if (!isDbConnected || !window.db || !window.auth?.currentUser) return;
+      const appId = window.appId;
+      try {
+        await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'system', 'inventory'), { data: inventoryState });
+        await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'system', 'commitments'), { data: commitmentState });
+      } catch (e) {
+        console.error("Firestore State Push Error:", e);
+      }
+    }
+
+    async function syncUsersToFirestore() {
+      if (!isDbConnected || !window.db || !window.auth?.currentUser) return;
+      const appId = window.appId;
+      try {
+        await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'system', 'users_config'), { data: usersConfig });
+      } catch (e) {
+        console.error("Firestore Users Push Error:", e);
+      }
+    }
+
+    async function syncLogToFirestore(log) {
+      if (!isDbConnected || !window.db || !window.auth?.currentUser) return;
+      const appId = window.appId;
+      try {
+        await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'delivery_logs', log.id), log);
+      } catch (e) {
+        console.error("Firestore Log Push Error:", e);
+      }
+    }
+
+    async function syncDispatchToFirestore(dispatchRecord) {
+      if (!isDbConnected || !window.db || !window.auth?.currentUser) return;
+      const appId = window.appId;
+      try {
+        await window.setDoc(window.doc(window.db, 'artifacts', appId, 'public', 'data', 'dispatched_plans', dispatchRecord.id), dispatchRecord);
+      } catch (e) {
+        console.error("Firestore Dispatch Push Error:", e);
+      }
+    }
 
     function initUsersConfig() {
       const saved = localStorage.getItem('sml_users_config');
@@ -1086,6 +1277,32 @@
       } else {
         usersConfig = { ...DEFAULT_USERS };
       }
+    }
+
+    function saveUsersConfig() {
+      localStorage.setItem('sml_users_config', JSON.stringify(usersConfig));
+      syncUsersToFirestore();
+    }
+
+    function initInventoryState() {
+      MASTER_DATASET.forEach(item => {
+        inventoryState[item.planNum] = { UF: Array(13).fill(0), IF: Array(13).fill(0), SF: Array(13).fill(0) };
+        commitmentState[item.planNum] = { UF: Array(13).fill(0), IF: Array(13).fill(0), SF: Array(13).fill(0) };
+        plannerInputs[item.planNum] = Array(13).fill(0);
+      });
+    }
+
+    function updateClock() {
+      const clockEl = document.getElementById('liveTimeClock');
+      if (clockEl) clockEl.innerText = new Date().toLocaleString();
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('sml_inventory_state', JSON.stringify(inventoryState));
+      localStorage.setItem('sml_commitment_state', JSON.stringify(commitmentState));
+      localStorage.setItem('sml_dispatched_plans', JSON.stringify(dispatchedPlans));
+      localStorage.setItem('sml_delivery_logs', JSON.stringify(deliveryLogs));
+      syncStateToFirestore();
     }
 
     function saveUsersConfig() {
@@ -1450,6 +1667,7 @@
         log.targetType = 'COLLECTED';
         log.dockStatus = 'VERIFIED';
         saveToLocalStorage();
+        syncLogToFirestore(log);
         showToast(`Verified and added ${log.totalPairs} pairs to warehouse stock!`, "success");
         renderCollectingPointPortal();
       });
@@ -1739,16 +1957,18 @@
           }
         });
 
-        dispatchedPlans.unshift({
+        const dispatchRecord = {
           id: dispatchId,
           timestamp: new Date().toLocaleString(),
           efficiency: efficiency,
           totalPairs: grandTotal,
           totalHours: totalHours,
           items: dispatchedItems
-        });
+        };
 
+        dispatchedPlans.unshift(dispatchRecord);
         saveToLocalStorage();
+        syncDispatchToFirestore(dispatchRecord);
         clearPlannerInputs();
         renderAppView();
         showToast(`Dispatched ${grandTotal.toLocaleString()} pairs (${totalHours.toFixed(1)} hrs) to assembly line!`, "success");
@@ -1857,7 +2077,7 @@
         }
       }
 
-      deliveryLogs.unshift({
+      const newLog = {
         id: "LOG-" + Date.now(),
         timestamp: new Date().toLocaleString(),
         supplier: currentSupplierModal,
@@ -1868,9 +2088,11 @@
         sizes: added,
         status: 'ACTIVE',
         dockStatus: targetType === 'COLLECTED' ? 'VERIFIED' : 'PENDING'
-      });
+      };
 
+      deliveryLogs.unshift(newLog);
       saveToLocalStorage();
+      syncLogToFirestore(newLog);
       closeSupplierModal();
       showToast(`Saved ${sumAdded} pairs of ${comp} as ${targetType}!`, "success");
       renderAppView();
@@ -2150,6 +2372,7 @@
         }
         log.status = 'DELETED';
         saveToLocalStorage();
+        syncLogToFirestore(log);
         renderAppView();
         showToast(`Reverted delivery log ${logId}`, "info");
       });
@@ -2167,6 +2390,7 @@
         }
         log.status = 'ACTIVE';
         saveToLocalStorage();
+        syncLogToFirestore(log);
         renderAppView();
         showToast(`Restored delivery log ${logId}`, "success");
       });

@@ -1667,6 +1667,108 @@
       }
     }
 
+    function autoFillPlanMaxSets() {
+      MASTER_DATASET.forEach(item => {
+        const inv = inventoryState[item.planNum];
+        if (!inv) return;
+        if (!plannerInputs[item.planNum]) plannerInputs[item.planNum] = Array(13).fill(0);
+        for (let i = 0; i < 13; i++) {
+          const matchable = Math.min(inv.UF[i], inv.IF[i], inv.SF[i]);
+          let packVal = Math.floor(matchable / 10) * 10;
+          if (packVal < 10) packVal = 0;
+          plannerInputs[item.planNum][i] = packVal;
+        }
+      });
+      if (currentUser && currentUser.role === 'CollectingPoint') {
+        renderCollectPlannerMatrix();
+      } else {
+        renderPlannerMatrix();
+      }
+      updateKPIs();
+      showToast("Auto-filled max matchable sets in multiples of 10!", "success");
+    }
+
+    function clearPlannerInputs() {
+      MASTER_DATASET.forEach(item => {
+        plannerInputs[item.planNum] = Array(13).fill(0);
+      });
+      if (currentUser && currentUser.role === 'CollectingPoint') {
+        renderCollectPlannerMatrix();
+      } else {
+        renderPlannerMatrix();
+      }
+      updateKPIs();
+      showToast("Reset all planned input quantities", "info");
+    }
+
+    function dispatchAssemblyDailyPlanBatch() {
+      const totalHours = calcTotalPlannerHours();
+      if (totalHours === 0) {
+        showToast("Please input planned quantities before dispatching!", "warning");
+        return;
+      }
+
+      const effEl = document.getElementById('collectLineEfficiency') || document.getElementById('globalLineEfficiency');
+      const efficiency = parseInt(effEl ? effEl.value : '75');
+
+      const doDispatch = () => {
+        const dispatchId = "DISP-" + Date.now();
+        let dispatchedItems = [];
+        let grandTotal = 0;
+
+        MASTER_DATASET.forEach(item => {
+          const sizes = [...(plannerInputs[item.planNum] || Array(13).fill(0))];
+          const sum = sizes.reduce((a, b) => a + b, 0);
+          if (sum > 0) {
+            for (let i = 0; i < 13; i++) {
+              inventoryState[item.planNum].UF[i] = Math.max(0, inventoryState[item.planNum].UF[i] - sizes[i]);
+              inventoryState[item.planNum].IF[i] = Math.max(0, inventoryState[item.planNum].IF[i] - sizes[i]);
+              inventoryState[item.planNum].SF[i] = Math.max(0, inventoryState[item.planNum].SF[i] - sizes[i]);
+            }
+            const rate = getHourlyRate(item.type, efficiency);
+            dispatchedItems.push({
+              planNum: item.planNum,
+              itemCode: item.itemCode,
+              type: item.type,
+              hourlyRate: rate,
+              pairs: sum,
+              hours: sum / rate,
+              sizes: sizes
+            });
+            grandTotal += sum;
+          }
+        });
+
+        dispatchedPlans.unshift({
+          id: dispatchId,
+          timestamp: new Date().toLocaleString(),
+          efficiency: efficiency,
+          totalPairs: grandTotal,
+          totalHours: totalHours,
+          items: dispatchedItems
+        });
+
+        saveToLocalStorage();
+        clearPlannerInputs();
+        renderAppView();
+        showToast(`Dispatched ${grandTotal.toLocaleString()} pairs (${totalHours.toFixed(1)} hrs) to assembly line!`, "success");
+      };
+
+      if (totalHours > SHIFT_HOURS) {
+        showConfirmModal(
+          "Shift Capacity Exceeded Warning",
+          `Planned runtime (${totalHours.toFixed(1)} hrs) exceeds the 11.1 hours shift capacity limit. Do you still want to dispatch this daily plan batch?`,
+          doDispatch
+        );
+      } else {
+        showConfirmModal(
+          "Confirm Assembly Dispatch",
+          `Dispatch ${calcTotalPlannerHours().toFixed(1)} hours of assembly plans to the production line?`,
+          doDispatch
+        );
+      }
+    }
+
     function openSupplierModal(supplierKey) {
       currentSupplierModal = supplierKey || 'SML';
       document.getElementById('lblPlanSelect').innerText = `SELECT ${currentSupplierModal} PLAN NUMBER`;
